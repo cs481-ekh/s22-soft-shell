@@ -17,7 +17,7 @@ Goals: Time to meet, work split/interests, project approach, start on draft
     - Start implementing a version in C using Flex lexer library.
   - Carson
     -  Look at overall Rust structure, how to implement cleanly in rust, C bindings, packaging, libraries ect. Potential help from Rob.
-  - Started working on Project Plan Draft 
-    - Anna took lead
-  - Started work on email to GoWest
-    - Carson working on draft
+- Started working on Project Plan Draft 
+  - Anna took lead
+- Started work on email to GoWest
+  - Carson working on draft
