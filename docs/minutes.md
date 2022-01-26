@@ -1,16 +1,18 @@
 Meeting 1/26/2022
 
 Scribe: Douglas
+
 Present: Carson, Anna, Natalie, Rob, Doug
+
 Absent: N/A
 
 Goals: Test google meet, Sponser meeting plan, Contract
 
--Tested video and audiofor everyone
+- Tested video and audiofor everyone
     -everyone was able to share video, speak, and hear
     - Anna is testing screen recording
 
--Writing outline for sponser meeting
+- Writing outline for sponser meeting
     - shared google doc in drive
     - listed topics and question sections
     
