@@ -1,3 +1,32 @@
+Meeting 1/28/2022 (Initial Sponsor Meeting)
+Scribe: Anna (scribed from recording)
+Present: Team Soft Shell + Sky Logan, Joshua Downer, Jonas Abdo, Gerry Ens
+Absent: N/A
+Goals: Discuss and clarify project plan with sponsor
+
+- Carson leading meeting agenda
+- Anna recording
+- reviewed block diagram and main project components
+- discussed scope of project, language coverage
+    - make sure to plan ahead for supporting language features like scope, exceptions
+- discussed option of transpiler instead of interpreter
+    - Gerry: not needed at the moment
+- requested structured text samples
+    - may be hard to find a good production example because they are usually complicated and connected to other pieces
+    - for our purposes, external function calls will be C/Rust stubs
+- Go West needs to review license of any library (including parser-generator) we use
+- priority between more features and supporting more ST depends on what we get done
+    - however, good language support is required ("95th percentile of most-used features in ST") to get the main value here
+- on board with open-source license for software, do not want to lock it down
+- ongoing communication
+    - meeting weekly for first few weeks, then maybe every other week later
+        - discuss internally and send GW schedule options
+    - want to use a GW repository, their devs will check on our work
+    - will use Slack to quickly reach out, along with email
+- will show them completed project plan once we have it
+
+____________________________________________________________________________
+
 Meeting 1/26/2022
 
 Scribe: Douglas
@@ -15,9 +44,9 @@ Goals: Test google meet, Sponser meeting plan, Contract
 - Writing outline for sponser meeting
     - shared google doc in drive
     - listed topics and question sections
-    
+
 - Discussed project timeline
-    -will review and adjust after initial sponser meeting 
+    -will review and adjust after initial sponser meeting
 
 - Discussed licensing agreements
     - interested in being open source
@@ -57,23 +86,22 @@ Scribe: Carson
 Present: Carson, Anna, Natalie, Rob, Doug
 Absent: N/A
 
-Goals: Time to meet, work split/interests, project approach, start on draft 
+Goals: Time to meet, work split/interests, project approach, start on draft
 
-- Decided on time to meet 
+- Decided on time to meet
   - 1:30 - 2:30 Friday's
 - Project appoach
   - Decided to start down path of creating seperate C version to get first working version
   - Simultaniously start learning/exploring implimentation in Rust
 - Work split
-  - Doug and Rob 
+  - Doug and Rob
     - looking at ISO Structured text - Doug lead
-  - Natalie and Anna 
+  - Natalie and Anna
     - Start implementing a version in C using Flex lexer library.
   - Carson
     -  Look at overall Rust structure, how to implement cleanly in rust, C bindings, packaging, libraries ect. Potential help from Rob.
-- Started working on Project Plan Draft 
+- Started working on Project Plan Draft
   - Anna took lead
 - Started work on email to GoWest
   - Carson working on draft
-  
-  
+
