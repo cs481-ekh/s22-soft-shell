@@ -1,3 +1,31 @@
+Meeting 2/2/2022
+
+Scribe: Rob
+Present: Team SoftShell + Sky Logan, Joshua Downer, Jonas Abdo
+Absent: N/A
+Goals: License clarification, ANTLR, Final Project Proposal
+
+Anna lead the meeting
+
+Double checked the MIT license was ok for the GitHub Repo
+
+Informed the GoWest team about CI requirements for project requirements
+
+Talked about making the repo public vs private
+	- Anna brought up the pros vs cons of time allowed for private vs public
+	- GoWest team usually prefers private until at least the product is little more close to being complete
+	
+GoWest thinks that ANTLR would be a good way to go. The licesning(BST) is also good.
+
+GoWest does not like the idea of GPL licensing
+
+Informed the GoWest team about next Tuesday being when the Final Project Proposal will be complete.
+	- Plan to go over the final project proposal with the GoWest team next Wednesday.
+	- Joshua D requested a copy of the final project proposal prior to the meeting.
+	- Plan to send the final project proposal to the GoWest team via Slack.
+
+__________________________________________________________________________
+
 Meeting 1/28/2022 (Initial Sponsor Meeting)
 Scribe: Anna (scribed from recording)
 Present: Team Soft Shell + Sky Logan, Joshua Downer, Jonas Abdo, Gerry Ens
