@@ -1,3 +1,16 @@
+Meeting 2/4/2022
+
+Scribe: Anna (written after)
+Present: Anna, Natalie, Carson, Doug
+Absent: Rob
+Goals: Complete project proposal
+
+- Had previously split up sections of the proposal to work on independently
+- Went through entire document collaboratively and made modifications, up to the middle of section 3.3
+- Will meet unofficially Saturday as people are available to complete proposal
+
+__________________________________________________________________________
+
 Meeting 2/2/2022
 
 Scribe: Rob
