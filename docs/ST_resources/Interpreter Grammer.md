@@ -10,7 +10,7 @@ Program				:'PROGRAM' identifier {VAR_list} StatementList 'END_PROGRAM'
 
 ### VARS
 <pre>
-VAR_List			: <span style="color:blue>VAR </span>{VAR_List} 
+VAR_List			: VAR {VAR_List} 
 VAR				: 'VAR'{RETAIN} DeclarationList 'END_VAR'
 				| 'VAR_INPUT' {'RETAIN'} DeclarationList 'END_VAR'
 				| 'VAR_OUTPUT' {'RETAIN'} DeclarationList 'END_VAR'
