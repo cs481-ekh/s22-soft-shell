@@ -3,6 +3,14 @@
 
 ### not case sensitive
 
+#### Comments
+Structured text has two types of comments
+<pre>
+line comment 	// commented text
+
+block comment 	(* commented text *)
+</pre>
+
 ### Program module and function module are separated
 <pre>
 programs are split up as follows
@@ -39,21 +47,22 @@ Function block (FB) PLC code which includes static data. The local variables ret
 
 Template
 <pre>
-FUNCTION <Name> : <RetDataType>
+FUNCTION &ltName&gt : &ltRetDataType&gt
 VAR_INPUT
-   <Variables>
+   &ltVariables&gt
 END_VAR
 VAR_OUTPUT
-   <Variables>
+   &ltVariables&gt
 END_VAR
 VAR_IN_OUT
-   <Variables>
+   &ltVariables&gt
 END_VAR
 VAR
-   <Variable> //local variables
+   &ltVariable&gt //local variables
 END_VAR
-   <Implementation> //write code here
-   <Name> := 123; //set return value
+   &ltImplementation&gt //write code here
+
+   &ltName&gt := 123; //set return value
 END_FUNCTION
 </pre>
 
