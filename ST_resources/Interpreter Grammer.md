@@ -34,11 +34,6 @@ DeclarationList			: variable ':' type ';' {DeclarationList}
 <pre> TBD
 </pre>
 
-### Function
-<pre> TBD
-</pre>
-
-
 
 ### Expressions
 <pre>
