@@ -1,3 +1,26 @@
+Meeting 2/11/2022
+
+Scribe: Carson
+Present: Carson, Natalie, Doug, Rob, Anna
+Absent: N/A
+Goals: Finalize and Send Revized Project Plan to GoWest, Disscuss minimal deliverable document.
+
+ - Plan needs formatiing pass
+ 	- Completed 
+ -  Dissucssion around timeline and moving dtastructure implementation back 
+ 	-  Split context defininition between Milestone 3 and 4  
+ - Discussed making precise MVP document for defineing the exact parts of the ST grammer we're implementing
+ 	- Doug and Rob have been working on it. 
+ 	- Really well defined itertive subsets of the grammer
+ 	- Picked subset 9 to capture the minimal deliverable to GoWest
+ 	- Will be complted by next Tues (2/15)
+- Kanban board strucutre
+	- Starting pull request reviews and feature branch workflow in Sprint 1 
+	- Ignoring in Sprint 0 
+- Carson sent finalized plan to GoWest
+__________________________________________________________________________
+
+
 Meeting 2/4/2022
 
 Scribe: Anna (written after)
