@@ -3,10 +3,10 @@
 - [Subset_01](./Subset01.md) 
 <br>Able to handle variable assignment from constant
 
-- [Subset_02](./Subset02.md) (IN PROGRESS)
+- [Subset_02](./Subset02.md) 
 <br> Expanded to variable assignment from constants and other variables
 
-- [Subset_03](./Subset03.md) (IN PROGRESS)
+- [Subset_03](./Subset03.md) 
 <br> Expanded to expressions using addition and subtraction
 
 - [Subset_04](./Subset04.md) 
