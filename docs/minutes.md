@@ -1,3 +1,32 @@
+Meeting 2/13/2022
+
+Scribe: Natalie
+
+Present: Carson, Anna, Doug, Natalie, Rob
+
+Absent: N/A
+
+Goals: Sprint One planning
+
+- Assigned roles for sprint one
+	- Product owner: Carson
+	- Scrum master: Rob
+	- Scribe: Natalie
+- Created goals for sprint one
+	- Complete milestone two
+	- Parser will be able to generate the correct AST for subset one of ST
+	- Data structures for context and program handle will be defined
+- Decided on stretch goals for the sprint
+	- Start the tree walker functions and the functions to modify program context
+- Discord channel was created for scrum updates
+- User stories were created
+- Divided up work
+	- Parser generator: Rob, Carson, Doug
+	- Data structures: Anna, Natalie, Doug
+- Updates on everyone's status with learning Rust
+
+__________________________________________________________________________
+
 Meeting 2/11/2022
 
 Scribe: Carson
