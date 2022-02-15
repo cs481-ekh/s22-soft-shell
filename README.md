@@ -1,4 +1,7 @@
 # bsu_st_interpreter
+
+[![build and test workflow status badge](https://github.com/GoWestRobotics/bsu_st_interpreter/actions/workflows/main.yml/badge.svg)](https://github.com/GoWestRobotics/bsu_st_interpreter/actions/workflows/main.yml)
+
 BSU Capstone senior project - Structured Text Interpreter
 
 ## Dev Environment Setup
