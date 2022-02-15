@@ -1,0 +1,20 @@
+name: Build and test interpreter
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ./st_interpret
+    steps:
+    - uses: actions/checkout@v2
+    - name: pre-build clean
+      run: ./clean.sh
+    - name: build project
+      run: ./build.sh
+    - name: run tests
+      run: ./test.sh
+    - name: post-build clean
+      run: ./clean.sh
