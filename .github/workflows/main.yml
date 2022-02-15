@@ -1,6 +1,9 @@
 name: Build and test
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'st_interpret/**'
 
 jobs:
   build:
