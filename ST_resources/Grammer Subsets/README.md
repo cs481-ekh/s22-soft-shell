@@ -21,8 +21,8 @@
 - [Subset_07](./Subset07.md) 
 <br> Expanded to While loops and comparisons
 
-- [Subset_08](./Subset08.md) (IN PROGRESS)
+- [Subset_08](./Subset08.md) 
 <br>Expanded types of VAR variables
 
-- [Subset_09](./Subset09.md) (IN PROGRESS)
+- [Subset_09](./Subset09.md) 
 <br> Expanded to handling Function calls
