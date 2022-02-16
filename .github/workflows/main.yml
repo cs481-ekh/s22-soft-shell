@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
-    timeout-minutes: 5
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: ./st_interpret
