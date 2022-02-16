@@ -8,6 +8,6 @@ fn it_adds_two_integration() {
 }
 
 #[test]
-fn it_adds_20_integration() {
-    assert_eq!(22,  st_interpret::lib_function_example_add(20, 2));
+fn it_adds_15_integration() {
+    assert_eq!(17,  st_interpret::lib_function_example_add(15, 2));
 }
