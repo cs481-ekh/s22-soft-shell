@@ -16,6 +16,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: pre-build clean
       run: ./clean.sh
+    - uses: actions-rs/install@v0.1
+      with:
+        crate: cargo-c
+        version: latest
+        use-tool-cache: true
     - name: build project
       run: ./build.sh
     - name: run tests
