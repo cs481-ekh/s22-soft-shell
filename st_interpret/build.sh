@@ -6,4 +6,6 @@ if ! [ -x "$(command -v cargo)" ]; then
   curl https://sh.rustup.rs -sSf | sh
 fi
 
+cargo install cargo-c || { echo "Cargo-c install failed" >&2; exit 1; }
+
 cargo cbuild || { echo "Build failed" >&2; exit 1; }
