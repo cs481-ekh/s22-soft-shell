@@ -2,7 +2,7 @@
 name = "st_interpret"
 version = "0.1.0"
 edition = "2021"
-
+build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 # Note: Picked dynamic lib for easy re-generation of library files. Can be changed later.
@@ -15,9 +15,12 @@ path = "src/lib.rs"
 capi = []
 
 [dependencies]
+lalrpop-util = { version = "^0.19", features = ["lexer"] }
+regex = "1"
 
 [dev-dependencies]
 inline-c = "0.1"
 
 [build-dependencies]
 cbindgen = "0.20"
+lalrpop = "0.19.7"
