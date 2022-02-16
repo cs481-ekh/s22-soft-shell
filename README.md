@@ -6,16 +6,23 @@ BSU Capstone senior project - Structured Text Interpreter
 
 ## Dev Environment Setup
 
-Install cbindgen into cargo for automatic C header file generation:
+Install cargo-c into cargo for automatic C header file and build management:
 
 ```shell
-$ cargo install --force cbindgen
+$ cargo install cargo-c
 ```
 
-It then can be run by calling:
+It then can be built by calling:
 
 ```shell
-$ cbindgen --config cbindgen.toml --lang c --crate st_interpret --output st_interpret.h
+$ cargo cbuild
 ```
 
-Src: https://github.com/eqrion/cbindgen
+
+Tests can be run by calling:
+
+```shell
+$ cargo ctest
+```
+
+Ref: https://crates.io/crates/cargo-c

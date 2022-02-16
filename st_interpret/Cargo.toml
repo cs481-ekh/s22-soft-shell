@@ -9,6 +9,15 @@ edition = "2021"
 [lib]
 name = "st_interpret"
 path = "src/lib.rs"
-crate-type = ["lib", "cdylib"] # Creates rust and dynamic c lib
+
+# Using cargo-c so crate-type doesn't need to be defined
+[features]
+capi = []
 
 [dependencies]
+
+[dev-dependencies]
+inline-c = "0.1"
+
+[build-dependencies]
+cbindgen = "0.20"
