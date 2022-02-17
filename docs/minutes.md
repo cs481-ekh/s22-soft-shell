@@ -1,3 +1,27 @@
+Meeting 2/16/2022
+
+Scribe: Natalie
+
+Present: Carson, Anna, Doug, Natalie, Rob, Sky, Joshua, Jonas
+
+Absent: N/A
+
+Goals: Sponsor update
+
+- Project proposal
+	- New version addresses all concerns
+	- Approval email has been sent
+- Project state document explained to sponsors
+- Sprint 0 is completed and Sprint 1 has started
+	- We are targeting milestone 2 for sprint 1
+- Questions from sponsor
+	- Q: Are we committing directly to the repository?
+	- A: We did for set up in sprint 0, but we are moving to a feature-branch workflow for the rest of the project
+	- Q: How are we going to be able to test our work?
+	- A: We are going to be working on the API functions as we are working on the interpreter, so we can use them to test
+
+__________________________________________________________________________
+
 Meeting 2/13/2022
 
 Scribe: Natalie
