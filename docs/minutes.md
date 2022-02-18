@@ -1,3 +1,30 @@
+Meeting 2/18/2022
+
+Scribe: Natalie
+
+Present: Carson, Anna, Doug, Natalie, Rob
+
+Absent: N/A
+
+Goals: 
+
+- Updates on everyone's progress so far in the sprint
+- Rob will start working on the parser for subset 1
+- Carson will set up the documentation
+- We will use rustfmt tool to format our code
+- Discussed having a separate folder for resources related to rust
+	- Decided against it
+- Discussion about pull requests
+	- Pull request commit is in the form "Closes #issue_number (#PR_number)"
+	- Going forward, we need to put more information in pull request descriptions
+	- Comments relevant to the code should be posted under the pull request
+	- Comments not related to the code can be sent in discord
+- We will make a user story about learning rust
+	- Everyone's rust learning tasks should be linked to this user story
+	- Other learning tasks should be linked to the story that they are being learned in order to complete
+
+__________________________________________________________________________
+
 Meeting 2/16/2022
 
 Scribe: Natalie
