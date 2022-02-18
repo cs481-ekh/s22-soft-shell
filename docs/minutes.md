@@ -6,7 +6,7 @@ Present: Carson, Anna, Doug, Natalie, Rob
 
 Absent: N/A
 
-Goals: 
+Goals: Mid-sprint team meeting
 
 - Updates on everyone's progress so far in the sprint
 - Rob will start working on the parser for subset 1
