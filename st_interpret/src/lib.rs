@@ -5,22 +5,22 @@ pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
 }
 
 #[macro_use] extern crate lalrpop_util;
-lalrpop_mod!(pub calculator1);
+lalrpop_mod!(pub parser);
 
 mod prog_handle;
 
 // Unit tests here
 #[cfg(test)]
 mod tests {
-    use crate::{lib_function_example_add, calculator1};
+    use crate::{lib_function_example_add, parser};
 
     // Testing larlpop functionality
     #[test]
-    fn calculator1() {
-        assert!(calculator1::TermParser::new().parse("22").is_ok());
-        assert!(calculator1::TermParser::new().parse("(22)").is_ok());
-        assert!(calculator1::TermParser::new().parse("((((22))))").is_ok());
-        assert!(calculator1::TermParser::new().parse("((22)").is_err());
+    fn parser() {
+        assert!(parser::TermParser::new().parse("22").is_ok());
+        assert!(parser::TermParser::new().parse("(22)").is_ok());
+        assert!(parser::TermParser::new().parse("((((22))))").is_ok());
+        assert!(parser::TermParser::new().parse("((22)").is_err());
     }
 
     #[test]
