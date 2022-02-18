@@ -7,6 +7,8 @@ pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
 #[macro_use] extern crate lalrpop_util;
 lalrpop_mod!(pub calculator1);
 
+mod prog_handle;
+
 // Unit tests here
 #[cfg(test)]
 mod tests {
