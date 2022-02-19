@@ -25,5 +25,7 @@ jobs:
       run: ./build.sh
     - name: run tests
       run: ./test.sh
+    - name: check format
+      run: cargo fmt --check
     - name: post-build clean
       run: ./clean.sh

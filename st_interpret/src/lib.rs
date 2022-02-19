@@ -4,7 +4,8 @@ pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
     num_one + num_two
 }
 
-#[macro_use] extern crate lalrpop_util;
+#[macro_use]
+extern crate lalrpop_util;
 lalrpop_mod!(pub parser);
 
 mod prog_handle;

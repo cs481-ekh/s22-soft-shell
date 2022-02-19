@@ -14,19 +14,22 @@ mod capi_test {
                 assert(4 == lib_function_example_add_clib(2, 2));
                 return 0;
             }
-        }).success();
+        })
+        .success();
     }
 
     #[test]
     fn it_works_unit() {
         (assert_c! {
-           #include <stdio.h>
+            #include <stdio.h>
 
-        int main() {
-            printf("Hello, World!");
+            int main() {
+                printf("Hello, World!");
 
-            return 0;
-        }
-    }).success().stdout("Hello, World!");
+                return 0;
+            }
+        })
+        .success()
+        .stdout("Hello, World!");
     }
 }
