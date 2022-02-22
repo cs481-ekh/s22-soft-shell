@@ -1,6 +1,27 @@
 // Rust integration tests here
 
 use st_interpret;
+use st_interpret::read_file;
+
+#[macro_use]
+extern crate lalrpop_util;
+
+lalrpop_mod!(pub parser);
+
+// Testing larlpop functionality
+#[test]
+fn example_parser() {
+    assert!(parser::TermParser::new().parse("22").is_ok());
+    assert!(parser::TermParser::new().parse("(22)").is_ok());
+    assert!(parser::TermParser::new().parse("((((22))))").is_ok());
+    assert!(parser::TermParser::new().parse("((22)").is_err());
+}
+
+#[test]
+fn test_open_file() {
+    let a = read_file("tests/st_testing_subsets/01_Bool.st");
+    assert_eq!(a.is_empty(), false);
+}
 
 #[test]
 fn it_adds_two_integration() {
