@@ -59,7 +59,8 @@ mod tests {
 
     #[test]
     fn test_open_file() {
-        let a = read_file("tests/st_testing_subsets/01_Bool.st");
-        assert_eq!(a.is_empty(), false);
+        let result = read_file("tests/st_testing_subsets/read_test.txt");
+        assert_eq!(result.is_empty(), false);
+        assert_eq!(result, "Hello World!");
     }
 }
