@@ -1,3 +1,24 @@
+Meeting 2/23/2022
+
+Scribe: Natalie
+
+Present: Carson, Anna, Doug, Natalie, Rob, Sky, Joshua, Jonas
+
+Absent: N/A
+
+Goals: Sponsor update
+
+- Update on our current progress with the parser
+- We will have knowledge tasks on the scrum board that are not linked to any code
+	- These will have a knowledge task label
+- Request from sponsor to include Josh and Jonas on all of our pull requests
+	- We don't need to wait for them to review it in order to merge it, they'll review things if they have time
+	- If there is something specific we want them to review, we should ping them on slack
+- It was recommended that we put together documents that reflect the information we find in our knowledge gathering tasks
+
+__________________________________________________________________________
+
+
 Meeting 2/18/2022
 
 Scribe: Natalie
