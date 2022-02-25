@@ -1,3 +1,30 @@
+Meeting 2/25/2022
+
+Scribe: Natalie
+
+Present: Carson, Anna, Doug, Natalie, Rob
+
+Absent: N/A
+
+Goals: Weekly team meeting
+
+- Acknowledgement from Carson about receipt of email
+- Subset 1 AST generation task is almost complete
+	- Carson will have it pushed by the end of the day, otherwise he will ask someone else to finish it off
+- Currently the structure is bottom-up with the parser generating the AST
+	- Later, this may change to be top-down, where the parser fills in an already existing AST
+- Discussion about documentation tools and where to put the generated documentation
+	- Anna is working on this and will decide what makes the most sense
+- We are close to finishing milestone two
+	- We are on track to be able to parse subset 1 by the end of the sprint
+	- Program handle task should be able to be completed in the next few days
+	- Program load function task is blocked waiting on the program handle
+- Discussion about line tracking within the program handle
+	- We will start by just keeping track of the statement number
+- When2meet to schedule our sprint two planning meeting for sometime in between Sunday and Wednesday
+
+__________________________________________________________________________
+
 Meeting 2/23/2022
 
 Scribe: Natalie
