@@ -3,18 +3,10 @@
 use st_interpret;
 use st_interpret::read_file;
 
-#[macro_use]
-extern crate lalrpop_util;
-
-lalrpop_mod!(pub parser);
-
 // Testing larlpop functionality
 #[test]
 fn example_parser() {
-    assert!(parser::TermParser::new().parse("22").is_ok());
-    assert!(parser::TermParser::new().parse("(22)").is_ok());
-    assert!(parser::TermParser::new().parse("((((22))))").is_ok());
-    assert!(parser::TermParser::new().parse("((22)").is_err());
+    assert!(st_interpret::parser_test());
 }
 
 #[test]

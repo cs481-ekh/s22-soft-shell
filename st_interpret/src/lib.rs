@@ -1,11 +1,24 @@
+mod ast;
+mod capi;
+mod prog_handle;
+
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-mod capi;
+#[macro_use]
+extern crate lalrpop_util;
+
+lalrpop_mod!(pub parser);
 
 pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
     num_one + num_two
+}
+
+pub fn parser_test() -> bool {
+    parser::ProgramParser::new()
+        .parse(&read_file("tests/st_testing_subsets/01_Int.st"))
+        .is_ok()
 }
 
 pub fn read_file(file_path: &str) -> String {
@@ -23,25 +36,36 @@ pub fn read_file(file_path: &str) -> String {
     return test;
 }
 
-#[macro_use]
-extern crate lalrpop_util;
-
-lalrpop_mod!(pub parser);
-
-mod prog_handle;
-
 // Unit tests here
 #[cfg(test)]
 mod tests {
     use crate::{lib_function_example_add, parser, read_file};
 
-    // Testing larlpop functionality
     #[test]
-    fn parser() {
-        assert!(parser::TermParser::new().parse("22").is_ok());
-        assert!(parser::TermParser::new().parse("(22)").is_ok());
-        assert!(parser::TermParser::new().parse("((((22))))").is_ok());
-        assert!(parser::TermParser::new().parse("((22)").is_err());
+    fn subset1_lexer_ast() {
+        println!(
+            "{:?}",
+            parser::ProgramParser::new().parse(&read_file("tests/st_testing_subsets/01_Int.st"))
+        );
+        assert!(parser::ProgramParser::new()
+            .parse(&read_file("tests/st_testing_subsets/01_Int.st"))
+            .is_ok());
+
+        println!(
+            "{:?}",
+            parser::ProgramParser::new().parse(&read_file("tests/st_testing_subsets/01_Bool.st"))
+        );
+        assert!(parser::ProgramParser::new()
+            .parse(&read_file("tests/st_testing_subsets/01_Bool.st"))
+            .is_ok());
+
+        println!(
+            "{:?}",
+            parser::ProgramParser::new().parse(&read_file("tests/st_testing_subsets/01_Real.st"))
+        );
+        assert!(parser::ProgramParser::new()
+            .parse(&read_file("tests/st_testing_subsets/01_Real.st"))
+            .is_ok());
     }
 
     #[test]

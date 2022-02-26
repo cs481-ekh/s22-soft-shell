@@ -1,15 +1,100 @@
 use std::str::FromStr;
+use std::boxed::Box;
+use std::vec::Vec;
+use std::collections::HashMap;
+use crate::ast::{VariableType, VarsDec, VariableKind, Assignment, Program};
 
 grammar;
 
-pub Term: i32 = {
-    <n:Num> => n,
-    "(" <t:Term> ")" => t,
+// TODO change varible label to somthing specific to program name conventions
+pub Program: Program = {
+    r"(?i)PROGRAM" <vl:VariableLabel> <v:VarList> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(vl, Some(v), s),
+    r"(?i)PROGRAM" <vl:VariableLabel> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(vl, None, s)
 };
 
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+// Start of StatementList branch
+// NOTE: breaks away from grammer.md to allow for more than one statement. COuld be a typo, but needs recursive call.
+StatementList: Vec<Assignment> = {
+    <s:Statement> ";" => {let mut v = Vec::new(); v.push(<>); v},
+    <s:Statement> ";" <mut sl:StatementList> => {sl.push(s); sl}
+};
 
+//TODO, type needs to be changed to something more general, also in statement list
+Statement: Assignment = {
+    <a:AssignmentStatement> => a
+};
+
+AssignmentStatement: Assignment = {
+    <v:VariableLabel> ":=" <e:Expression> => Assignment::Asgn(v, e)
+};
+
+// TODO expression not implimented fully, simply a basic type atm
+Expression: VariableType = {
+    <c:Constant> => c
+};
+
+// TODO: add all types, this stores a litteral value, reusing variabletype enum
+Constant: VariableType = {
+    <ui:Int> => VariableType::INT(ui),
+    <b:Bool> => VariableType::BOOL(b),
+    <f:Real> => VariableType::REAL(f),
+};
+
+
+
+// Start of VarList branch
+VarList: Vec<Box<VarsDec>> = {
+    <vdt:VarsDec> => {let mut v = Vec::new(); v.push(<>); v},
+    <vdt:VarsDec> <mut vl:VarList> => {vl.push(vdt); vl}
+};
+
+VarsDec: Box<VarsDec> = {
+    <vk:VariableKind> <dl:DeclarationList> r"(?i)END_VAR"=> Box::new(VarsDec::DecList(<>))
+};
+
+DeclarationList: Box<HashMap<Box<String>, VariableType>> = {
+    <vl:VariableLabel> ":" <vt:VariableType> ";" => {let mut m = HashMap::new(); m.insert(vl, vt); Box::new(m)},
+    <vl:VariableLabel> ":" <vt:VariableType> ";" <mut dl:DeclarationList> => {dl.insert(vl, vt); dl}
+};
+
+//TODO: Add rest of varaible kinds
+VariableKind: VariableKind = {
+    r"(?i)VAR" => VariableKind::NORMAL,
+};
+
+//TODO: check if types are case sensitive
+//TODO: add all var types
+//TODO: Check if types have default value or not, change enum if they are unintallized, default values provided are hack
+VariableType: VariableType = {
+    r"(?i)bool" => VariableType::BOOL(false),
+    r"(?i)int" => VariableType::INT(0),
+    r"(?i)real" => VariableType::REAL(0.0)
+};
+
+//TODO: include ST variable naming rules
+VariableLabel: Box<String> = <s:r"\w+"> => Box::new(s.to_string());
+
+Int: i16 = <s:r"[0-9]+"> => i16::from_str(s).unwrap();
+Bool: bool = <s:r"((?i)true|false)"> => bool::from_str(&s.to_lowercase()).unwrap();
+Real: f32 = <s:r"\d*\.\d*"> => f32::from_str(s).unwrap();
+
+// Sets regex precedence between terminals
 match {
-    r"#[^\n\r]*[\n\r]*" => {},
-    _,
+    r"(?i)int",
+    r"(?i)bool",
+    r"(?i)real",
+    "(",
+    ")",
+    r"(?i)PROGRAM",
+    r"(?i)END_PROGRAM",
+    r"(?i)END_VAR",
+    r"(?i)VAR",
+    ":",
+    ";",
+    ":=",
+    r"[0-9]+",
+    r"((?i)true|false)",
+    r"\d*\.\d*",
+} else {
+    r"\w+",
 }
