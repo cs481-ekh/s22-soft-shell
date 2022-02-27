@@ -1,4 +1,5 @@
 mod prog_handle {
+    use crate::ast::Program;
     use chrono::naive::{NaiveDate, NaiveTime};
     use std::collections::HashMap;
     use std::time::Duration;
@@ -35,5 +36,11 @@ mod prog_handle {
 
     struct ProgContext {
         symbols: HashMap<String, VariableInfo>,
+    }
+
+    struct ProgHandle {
+        statement_counter: u32,
+        ast: Program,
+        context: ProgContext,
     }
 }
