@@ -1,3 +1,23 @@
+Meeting 2/27/2022
+
+Scribe: Anna
+
+Present: All
+
+Absent: None
+
+Goals: Plan sprint 2
+
+- Natalie will be new scrum master and is leading meeting, Doug will be new product owner
+- Created new sprint board and milestone, user stories for this sprint coming from Project Plan
+- Targeting completion of subset 4, parsing and execution, for this sprint
+- Putting tasks for parsing and execution nodes under the same story because they are tightly linked
+- Completed planning of all sprint 2 user stories and issues
+- Do we assign issues ahead of time or just take them as we go?
+	- Group decided we take them as we go
+
+__________________________________________________________________________
+
 Meeting 2/25/2022
 
 Scribe: Natalie
