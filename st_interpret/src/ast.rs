@@ -1,6 +1,9 @@
+//! AST node definitions
+
 use std::collections::HashMap;
 
 #[derive(Debug)]
+/// ST variable, with enum variants representing ST types and holding the corresponding value
 pub enum VariableType {
     INT(i16),
     BOOL(bool),
@@ -8,6 +11,7 @@ pub enum VariableType {
 }
 
 #[derive(Debug)]
+/// Different 'kinds' of ST variables, such as input, output, etc.
 pub enum VariableKind {
     NORMAL,
     INPUT,
@@ -18,16 +22,19 @@ pub enum VariableKind {
 }
 
 #[derive(Debug)]
+/// A list of variable declarations of a certain variable kind
 pub enum VarsDec {
     DecList(VariableKind, Box<HashMap<Box<String>, VariableType>>),
 }
 
 #[derive(Debug)]
+/// A single assignment statement.
 pub enum Assignment {
     Asgn(Box<String>, VariableType),
 }
 
-// First arg is name, Second arg is varlist, third is statement list
+/// AST root node containing an entire ST program.
+/// First arg is name, Second arg is varlist, third is statement list
 #[derive(Debug)]
 pub enum Program {
     Prog(Box<String>, Option<Vec<Box<VarsDec>>>, Vec<Assignment>),

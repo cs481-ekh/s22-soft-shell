@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'st_interpret/**'
+      - '.github/**'
 
 jobs:
   build:
@@ -29,3 +30,9 @@ jobs:
       run: ./test.sh
     - name: post-build clean
       run: ./clean.sh
+    - name: generate rustdoc documentation
+      run: cargo doc --document-private-items
+    - uses: actions/upload-artifact@v2
+      with:
+        name: rustdocs-${{ github.sha }}
+        path: ${{ github.workspace }}/st_interpret/target/doc/st_interpret
