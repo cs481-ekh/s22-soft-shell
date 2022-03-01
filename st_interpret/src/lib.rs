@@ -2,7 +2,7 @@
 
 mod ast;
 mod capi;
-mod prog_handle;
+pub mod prog_handle;
 
 use std::fs::File;
 use std::io::BufRead;

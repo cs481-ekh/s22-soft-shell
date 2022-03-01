@@ -1,6 +1,7 @@
 // Rust integration tests here
 
 use st_interpret;
+use st_interpret::prog_handle::{st_program_load, ProgContext, ProgHandle};
 use st_interpret::read_file;
 
 /// Test lalrpop functionality
@@ -14,6 +15,19 @@ fn example_parser() {
 fn test_open_file() {
     let a = read_file("tests/st_testing_subsets/01_Bool.st");
     assert_eq!(a.is_empty(), false);
+}
+
+#[test]
+/// Test loading in a valid program
+fn test_load_program() {
+    st_program_load("tests/st_testing_subsets/01_Bool.st", ProgContext::new());
+}
+
+#[test]
+#[should_panic(expected = "UnrecognizedToken")]
+/// Test that loading an invalid program fails
+fn test_load_invalid_program() {
+    st_program_load("tests/st_testing_subsets/read_test.txt", ProgContext::new());
 }
 
 #[test]
