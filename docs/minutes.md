@@ -1,3 +1,23 @@
+Meeting 3/2/2022
+
+Scribe: Rob
+
+Present: Carson, Doug, Natalie, Rob, and GoWest
+
+Absent: Anna
+
+Goals: Sponsor Update
+
+- Doug updated GoWest about Sprint 1 and then the way ahead for Sprint 2
+- GoWest was wondering when they can use the interpreter to run a ST program
+- The team asked GoWest for a ST program that would be similar to something seen in production
+- Since a lot of the code is from the customer, GoWest suggested pushing the code with edge cases
+- Carson came up with the idea of testing ST code against a good inter
+- After the team meeting...
+- Doug and Rob are going to come up with test files to test edge cases for subset01
+
+__________________________________________________________________________
+
 Meeting 2/27/2022
 
 Scribe: Anna
