@@ -13,7 +13,6 @@ pub Program: Program = {
 };
 
 // Start of StatementList branch
-// NOTE: breaks away from grammer.md to allow for more than one statement. COuld be a typo, but needs recursive call.
 StatementList: Vec<Assignment> = {
     <s:Statement> ";" => {let mut v = Vec::new(); v.push(<>); v},
     <s:Statement> ";" <mut sl:StatementList> => {sl.push(s); sl}

@@ -43,7 +43,8 @@ ST_FunctionInput		: [VariableName ‘:=’] Expression
 
 ### Statements
 <pre>
-StatementList			: Statement ';' {Statement ';'}
+StatementList			: Statement ';' {StatementList}
+				| NIL
 Statement			: NIL
 				| Assignment Statement
 				| SelectionStatement
