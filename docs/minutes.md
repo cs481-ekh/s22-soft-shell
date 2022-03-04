@@ -1,3 +1,28 @@
+Meeting 3/4/2022
+
+Scribe: Anna
+
+Present: All
+
+Absent: None
+
+Goals: regular meeting + sprint 1 retrospective
+
+- sprint 1 retrospective comments
+	- remembering scrum updates
+	- update others on blockers sooner
+	- stay in our specific roles so we go faster, but communicate more about them
+	- break up tasks if they turn out to be too large
+- we are encouraging but not requiring scrum updates on sunday in addition to usual tuesday/thursday
+- clarified list of currently blocked tasks and how things will get done
+- discussed where step/run fit in and connection between them
+- discussed structure of ast node execution
+- discussed how to organize contexts for different function calls
+	- some part of that implementation can be done now but won't be used until later subsets
+- expecting spare time in sprint 1, will stretch to implement subset 7
+
+__________________________________________________________________________
+
 Meeting 3/2/2022
 
 Scribe: Rob
