@@ -4,9 +4,7 @@ mod ast;
 mod capi;
 pub mod prog_handle;
 
-use std::fs::File;
-use std::io::BufRead;
-use std::io::BufReader;
+use std::fs;
 
 #[macro_use]
 extern crate lalrpop_util;
@@ -27,18 +25,8 @@ pub fn parser_test() -> bool {
 
 /// Read in the contents of a file to a String
 pub fn read_file(file_path: &str) -> String {
-    let file = File::open(file_path).unwrap();
-    let mut lines = BufReader::new(file).lines();
-    let mut test = String::new();
-
-    loop {
-        if let Some(s) = lines.next() {
-            test.push_str(&s.unwrap());
-        } else {
-            break;
-        }
-    }
-    return test;
+    let contents = fs::read_to_string(file_path).expect("Unable to read file");
+    return contents;
 }
 
 /// Unit tests for interpreter
