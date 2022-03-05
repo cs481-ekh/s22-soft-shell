@@ -97,6 +97,7 @@ match {
     
     // Skip whitespace and comments
     r"\s*" => { },
+    r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
     r"\(\*([^\*]*\*+[^\*\)])*([^\*]*\*+|[^\*])*\*\)" => { }, // `/* comment */`
 } else {
     r"\w+",
