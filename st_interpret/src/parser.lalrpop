@@ -94,6 +94,10 @@ match {
     r"[0-9]+",
     r"((?i)true|false)",
     r"\d*\.\d*",
+    
+    // Skip whitespace and comments
+    r"\s*" => { },
+    r"\(\*([^\*]*\*+[^\*\)])*([^\*]*\*+|[^\*])*\*\)" => { }, // `/* comment */`
 } else {
     r"\w+",
 }
