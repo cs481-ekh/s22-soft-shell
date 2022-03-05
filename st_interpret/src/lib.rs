@@ -44,6 +44,7 @@ pub fn read_file(file_path: &str) -> String {
 /// Unit tests for interpreter
 #[cfg(test)]
 mod tests {
+    use crate::prog_handle::{ProgContext, VariableKind, VariableValue};
     use crate::{lib_function_example_add, parser, read_file};
 
     #[test]
@@ -95,5 +96,38 @@ mod tests {
         let result = read_file("tests/st_testing_subsets/read_test.txt");
         assert_eq!(result.is_empty(), false);
         assert_eq!(result, "Hello World!");
+    }
+
+    #[test]
+    /// Test adding an int variable to a ProgContext
+    fn test_add_var_int() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("variable"),
+            VariableKind::NORMAL,
+            VariableValue::INT(10),
+        );
+    }
+
+    #[test]
+    /// Test adding a bool variable to a ProgContext
+    fn test_add_var_bool() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("variable"),
+            VariableKind::NORMAL,
+            VariableValue::BOOL(false),
+        );
+    }
+
+    #[test]
+    /// Test adding a real variable to a ProgContext
+    fn test_add_var_real() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("variable"),
+            VariableKind::NORMAL,
+            VariableValue::REAL(1.5),
+        );
     }
 }

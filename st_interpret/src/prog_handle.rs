@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 /// ST variable types, each holding a corresponding value of that type.
-enum VariableValue {
+pub enum VariableValue {
     INT(i16),
     BOOL(bool),
     BYTE(u8),
@@ -27,7 +27,7 @@ enum VariableValue {
 }
 
 /// Different 'kinds' of ST variables, such as input, output, etc.
-enum VariableKind {
+pub enum VariableKind {
     INPUT,
     OUTPUT,
     NORMAL,
@@ -50,6 +50,16 @@ impl ProgContext {
         Self {
             symbols: HashMap::new(),
         }
+    }
+
+    /// Adds a variable to the symbol table with the associated value. If there is already a variable with the given name, the value is updated.
+    pub fn add_var(&mut self, name: String, kind: VariableKind, value: VariableValue) {
+        let var_info = VariableInfo {
+            var_value: value,
+            var_kind: kind,
+        };
+
+        self.symbols.insert(name, var_info);
     }
 }
 
