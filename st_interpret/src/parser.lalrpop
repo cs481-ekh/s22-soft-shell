@@ -24,7 +24,7 @@ Statement: Assignment = {
 };
 
 AssignmentStatement: Assignment = {
-    <v:VariableLabel> ":=" <e:Expression> => Assignment::Asgn(v, e)
+    <v:VariableLabel> ":=" <e:Expression> => Assignment::Asgn(<>)
 };
 
 // TODO expression not implimented fully, simply a basic type atm
@@ -34,9 +34,9 @@ Expression: VariableType = {
 
 // TODO: add all types, this stores a litteral value, reusing variabletype enum
 Constant: VariableType = {
-    <ui:Int> => VariableType::INT(ui),
-    <b:Bool> => VariableType::BOOL(b),
-    <f:Real> => VariableType::REAL(f),
+    <ui:Int> => VariableType::INT(<>),
+    <b:Bool> => VariableType::BOOL(<>),
+    <f:Real> => VariableType::REAL(<>),
 };
 
 
@@ -52,7 +52,7 @@ VarsDec: Box<VarsDec> = {
 };
 
 DeclarationList: Box<HashMap<Box<String>, VariableType>> = {
-    <vl:VariableLabel> ":" <vt:VariableType> ";" => {let mut m = HashMap::new(); m.insert(vl, vt); Box::new(m)},
+    <vl:VariableLabel> ":" <vt:VariableType> ";" => {let mut m = HashMap::new(); m.insert(<>); Box::new(m)},
     <vl:VariableLabel> ":" <vt:VariableType> ";" <mut dl:DeclarationList> => {dl.insert(vl, vt); dl}
 };
 
@@ -71,7 +71,7 @@ VariableType: VariableType = {
 };
 
 //TODO: include ST variable naming rules
-VariableLabel: Box<String> = <s:r"\w+"> => Box::new(s.to_string());
+VariableLabel: Box<String> = <s:VAR_NAME> => Box::new(s.to_string());
 
 Int: i16 = <s:r"[0-9]+"> => i16::from_str(s).unwrap();
 Bool: bool = <s:r"((?i)true|false)"> => bool::from_str(&s.to_lowercase()).unwrap();
@@ -88,17 +88,17 @@ match {
     r"(?i)END_PROGRAM",
     r"(?i)END_VAR",
     r"(?i)VAR",
-    ":",
-    ";",
-    ":=",
-    r"[0-9]+",
-    r"((?i)true|false)",
-    r"\d*\.\d*",
+    ":", // Type delcaration operator
+    ";", // Statement end
+    ":=", // Assignment operator
+    r"[0-9]+", // int
+    r"((?i)true|false)", // bool
+    r"\d*\.\d*", // real
     
     // Skip whitespace and comments
     r"\s*" => { },
     r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
     r"\(\*([^\*]*\*+[^\*\)])*([^\*]*\*+|[^\*])*\*\)" => { }, // `/* comment */`
 } else {
-    r"\w+",
+    r"\w+" => VAR_NAME,
 }
