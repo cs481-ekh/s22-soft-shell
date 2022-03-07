@@ -32,7 +32,8 @@ pub fn read_file(file_path: &str) -> String {
 /// Unit tests for interpreter
 #[cfg(test)]
 mod tests {
-    use crate::prog_handle::{ProgContext, VariableKind, VariableValue};
+    use crate::ast::VariableKind;
+    use crate::prog_handle::{ProgContext, VariableValue};
     use crate::{lib_function_example_add, parser, read_file};
 
     #[test]
@@ -117,5 +118,33 @@ mod tests {
             VariableKind::NORMAL,
             VariableValue::REAL(1.5),
         );
+    }
+
+    #[test]
+    /// Test updating a variable works
+    fn update_var() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("myvar"),
+            VariableKind::NORMAL,
+            VariableValue::INT(4),
+        );
+
+        prog_context.update_var("myvar", VariableValue::INT(5));
+
+        // TODO: check that the value is as expected
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot change the type of a variable")]
+    fn update_change_type_fails() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("myvar"),
+            VariableKind::NORMAL,
+            VariableValue::INT(4),
+        );
+
+        prog_context.update_var("myvar", VariableValue::REAL(5.0));
     }
 }

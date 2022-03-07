@@ -10,7 +10,7 @@ pub enum VariableType {
     REAL(f32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 /// Different 'kinds' of ST variables, such as input, output, etc.
 pub enum VariableKind {
     NORMAL,

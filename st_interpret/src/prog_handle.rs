@@ -1,5 +1,5 @@
 /// Program state and current execution information.
-use crate::ast::Program;
+use crate::ast::{Program, VariableKind};
 use crate::read_file;
 lalrpop_mod!(pub parser);
 use chrono::naive::{NaiveDate, NaiveTime};
@@ -24,13 +24,6 @@ pub enum VariableValue {
     LTIME(Duration),
     DATE(NaiveDate),
     TIME_OF_DAY(NaiveTime),
-}
-
-/// Different 'kinds' of ST variables, such as input, output, etc.
-pub enum VariableKind {
-    INPUT,
-    OUTPUT,
-    NORMAL,
 }
 
 /// All information stored about a variable.
@@ -60,6 +53,27 @@ impl ProgContext {
         };
 
         self.symbols.insert(name, var_info);
+    }
+
+    /// Update a variable's value in the symbol table if possible
+    pub fn update_var(&mut self, name: &str, new_value: VariableValue) {
+        // retrieve current value
+        let current_var_info = self
+            .symbols
+            .remove(name)
+            .expect("Attempted to update a variable that does not exist");
+
+        // disallow updating to a different ST variable type
+        if std::mem::discriminant(&current_var_info.var_value) != std::mem::discriminant(&new_value)
+        {
+            panic!("Cannot change the type of a variable");
+        }
+
+        let new_var_info = VariableInfo {
+            var_value: new_value,
+            ..current_var_info
+        };
+        self.symbols.insert(String::from(name), new_var_info);
     }
 }
 
