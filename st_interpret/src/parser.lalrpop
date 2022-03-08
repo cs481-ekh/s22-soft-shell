@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::boxed::Box;
 use std::vec::Vec;
 use std::collections::HashMap;
-use crate::ast::{VariableType, VarsDec, VariableKind, Assignment, Program};
+use crate::ast::{VariableValue, VarsDec, VariableKind, Assignment, Program};
 
 grammar;
 
@@ -28,15 +28,15 @@ AssignmentStatement: Assignment = {
 };
 
 // TODO expression not implimented fully, simply a basic type atm
-Expression: VariableType = {
+Expression: VariableValue = {
     <c:Constant> => c
 };
 
 // TODO: add all types, this stores a litteral value, reusing variabletype enum
-Constant: VariableType = {
-    <ui:Int> => VariableType::INT(<>),
-    <b:Bool> => VariableType::BOOL(<>),
-    <f:Real> => VariableType::REAL(<>),
+Constant: VariableValue = {
+    <ui:Int> => VariableValue::INT(<>),
+    <b:Bool> => VariableValue::BOOL(<>),
+    <f:Real> => VariableValue::REAL(<>),
 };
 
 
@@ -51,9 +51,9 @@ VarsDec: Box<VarsDec> = {
     <vk:VariableKind> <dl:DeclarationList> r"(?i)END_VAR"=> Box::new(VarsDec::DecList(<>))
 };
 
-DeclarationList: Box<HashMap<Box<String>, VariableType>> = {
-    <vl:VariableLabel> ":" <vt:VariableType> ";" => {let mut m = HashMap::new(); m.insert(<>); Box::new(m)},
-    <vl:VariableLabel> ":" <vt:VariableType> ";" <mut dl:DeclarationList> => {dl.insert(vl, vt); dl}
+DeclarationList: Box<HashMap<Box<String>, VariableValue>> = {
+    <vl:VariableLabel> ":" <vt:VariableValue> ";" => {let mut m = HashMap::new(); m.insert(<>); Box::new(m)},
+    <vl:VariableLabel> ":" <vt:VariableValue> ";" <mut dl:DeclarationList> => {dl.insert(vl, vt); dl}
 };
 
 //TODO: Add rest of varaible kinds
@@ -64,10 +64,10 @@ VariableKind: VariableKind = {
 //TODO: check if types are case sensitive
 //TODO: add all var types
 //TODO: Check if types have default value or not, change enum if they are unintallized, default values provided are hack
-VariableType: VariableType = {
-    r"(?i)bool" => VariableType::BOOL(false),
-    r"(?i)int" => VariableType::INT(0),
-    r"(?i)real" => VariableType::REAL(0.0)
+VariableValue: VariableValue = {
+    r"(?i)bool" => VariableValue::BOOL(false),
+    r"(?i)int" => VariableValue::INT(0),
+    r"(?i)real" => VariableValue::REAL(0.0)
 };
 
 //TODO: include ST variable naming rules

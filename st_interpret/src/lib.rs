@@ -32,8 +32,8 @@ pub fn read_file(file_path: &str) -> String {
 /// Unit tests for interpreter
 #[cfg(test)]
 mod tests {
-    use crate::ast::VariableKind;
-    use crate::prog_handle::{ProgContext, VariableValue};
+    use crate::ast::{VariableKind, VariableValue};
+    use crate::prog_handle::ProgContext;
     use crate::{lib_function_example_add, parser, read_file};
 
     #[test]

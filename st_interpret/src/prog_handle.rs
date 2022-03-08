@@ -1,30 +1,8 @@
 /// Program state and current execution information.
-use crate::ast::{Program, VariableKind};
+use crate::ast::{Program, VariableKind, VariableValue};
 use crate::read_file;
 lalrpop_mod!(pub parser);
-use chrono::naive::{NaiveDate, NaiveTime};
 use std::collections::HashMap;
-use std::time::Duration;
-
-/// ST variable types, each holding a corresponding value of that type.
-pub enum VariableValue {
-    INT(i16),
-    BOOL(bool),
-    BYTE(u8),
-    WORD(u16),
-    UINT(u16),
-    DWORD(u32),
-    DINT(i32),
-    REAL(f32),
-    LREAL(f64),
-    CHAR(u8),
-    WCHAR(u16),
-    STRING(String),
-    TIME(Duration),
-    LTIME(Duration),
-    DATE(NaiveDate),
-    TIME_OF_DAY(NaiveTime),
-}
 
 /// All information stored about a variable.
 struct VariableInfo {
