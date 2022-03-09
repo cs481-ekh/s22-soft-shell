@@ -1,3 +1,26 @@
+Meeting 3/9/2022
+
+Scribe: Anna
+
+Present: Team Soft Shell + Jonas Abdo, Joshua Downer
+
+Absent: Sky Logan
+
+Goals: Go West check-in
+
+- going off agenda doc in drive
+- our updates:
+    - halfway through sprint 2
+    - testing groups of example programs
+    - can execute AST now
+    - can manipulate variables in context
+    - will have full flow after run/step completed
+    - our work is on-schedule, will complete sprint goals
+- proposed moving to meeting every other week, AFTER next week where we will demo ST program execution next week
+    - Jonas says yes, we will also check with Sky
+- Joshua would like to try and run our code from our present instructions, will make an issue if it doesn't work
+__________________________________________________________________________
+
 Meeting 3/4/2022
 
 Scribe: Anna
@@ -199,17 +222,17 @@ Absent: N/A
 Goals: Finalize and Send Revized Project Plan to GoWest, Disscuss minimal deliverable document.
 
  - Plan needs formatiing pass
- 	- Completed 
- -  Dissucssion around timeline and moving dtastructure implementation back 
- 	-  Split context defininition between Milestone 3 and 4  
+ 	- Completed
+ -  Dissucssion around timeline and moving dtastructure implementation back
+ 	-  Split context defininition between Milestone 3 and 4
  - Discussed making precise MVP document for defineing the exact parts of the ST grammer we're implementing
- 	- Doug and Rob have been working on it. 
+ 	- Doug and Rob have been working on it.
  	- Really well defined itertive subsets of the grammer
  	- Picked subset 9 to capture the minimal deliverable to GoWest
  	- Will be complted by next Tues (2/15)
 - Kanban board strucutre
-	- Starting pull request reviews and feature branch workflow in Sprint 1 
-	- Ignoring in Sprint 0 
+	- Starting pull request reviews and feature branch workflow in Sprint 1
+	- Ignoring in Sprint 0
 - Carson sent finalized plan to GoWest
 __________________________________________________________________________
 
@@ -243,7 +266,7 @@ Informed the GoWest team about CI requirements for project requirements
 Talked about making the repo public vs private
 	- Anna brought up the pros vs cons of time allowed for private vs public
 	- GoWest team usually prefers private until at least the product is little more close to being complete
-	
+
 GoWest thinks that ANTLR would be a good way to go. The licesning(BST) is also good.
 
 GoWest does not like the idea of GPL licensing
