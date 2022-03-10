@@ -30,7 +30,14 @@ impl ProgContext {
             var_kind: kind,
         };
 
-        self.symbols.insert(name, var_info);
+        let var = &name.to_ascii_lowercase();
+
+        // disallow naming more than one variable by the same name
+        if self.symbols.contains_key(var) {
+            panic!("A variable already exists with this name");
+        }
+
+        self.symbols.insert(name.to_ascii_lowercase(), var_info);
     }
 
     /// Update a variable's value in the symbol table if possible

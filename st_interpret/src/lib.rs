@@ -127,6 +127,23 @@ mod tests {
         prog_context.update_var("myvar", VariableValue::REAL(5.0));
     }
 
+    #[test]
+    #[should_panic(expected = "A variable already exists with this name")]
+    fn add_second_variable_same_name_fails() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("myvar"),
+            VariableKind::NORMAL,
+            VariableValue::INT(4),
+        );
+
+        prog_context.add_var(
+            String::from("MyVAR"),
+            VariableKind::NORMAL,
+            VariableValue::INT(4),
+        );
+    }
+
     /// Tests parser on all st files within a specified folder
     fn parser_batch_test_st_folder(folder_path: &str) {
         let paths = fs::read_dir(folder_path).unwrap();
