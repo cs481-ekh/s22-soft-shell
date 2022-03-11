@@ -1,3 +1,22 @@
+Meeting 3/11/2022
+
+Scribe: Anna
+
+Present: Anna, Doug, Rob, Carson
+
+Absent: Natalie
+
+Goals: regular team meeting
+
+- went around and did updates
+- discussed implementation of run/step -- run will loop step
+- discussed if declarations should get processed statically during load or dynamically upon stepping
+    - we think functions cannot create globals
+    - either approach would work
+- next sprint planning meeting will be this Sunday at 5
+- demo plan: create a simple Rust executable that uses our library to execute a simple ST program
+__________________________________________________________________________
+
 Meeting 3/9/2022
 
 Scribe: Anna
