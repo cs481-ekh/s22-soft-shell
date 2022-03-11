@@ -1,6 +1,6 @@
-PROGRAM 04_mul
+PROGRAM 03_Add
 VAR
     a: int;
 END_VAR
-a := (3 * 2);
+a := (1 + 2);
 END_PROGRAM

@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::boxed::Box;
 use std::vec::Vec;
 use std::collections::HashMap;
-use crate::ast::{VariableValue, VarsDec, VariableKind, Assignment, Program};
+use crate::ast::*;
 
 grammar;
 
@@ -27,9 +27,57 @@ AssignmentStatement: Assignment = {
     <v:VariableLabel> ":=" <e:Expression> => Assignment::Asgn(<>)
 };
 
-// TODO expression not implimented fully, simply a basic type atm
-Expression: VariableValue = {
-    <c:Constant> => c
+
+// Start of expression branch
+Expression: Expression = {
+    <x:XOR_Expression> r"(?i)OR" <x2:XOR_Expression> => Expression::Expr(x, Some(x2)),
+    <x:XOR_Expression> => Expression::Expr(x, None),
+};
+
+XOR_Expression: XOR_Expression = {
+    <a:AND_Expression>  r"(?i)XOR" <a2:AND_Expression> => XOR_Expression::Xor(a, Some(a2)),
+    <a:AND_Expression> => XOR_Expression::Xor(a, None),
+};
+
+AND_Expression: AND_Expression = {
+  <c:Comparison> r"&|(?i)AND" <c2:Comparison> => AND_Expression::And(c, Some(c2)),
+  <c:Comparison> => AND_Expression::And(c, None),
+};
+
+Comparison: Comparison = {
+    <e:EquExpression> r"=|<>" <e2:EquExpression> => Comparison::Comp(e, Some(e2)),
+    <e:EquExpression> => Comparison::Comp(e, None),
+};
+
+EquExpression: EquExpression = {
+    <a:AddExpression> <c:ComparisionOperator> <a2:AddExpression> => EquExpression::Equ(a, Some((c, a2))),
+    <a:AddExpression> => EquExpression::Equ(a, None),
+};
+
+AddExpression: AddExpression = {
+    <t:Term> <a:AddOperator> <t2:Term> => AddExpression::Add(t, Some((a, t2))),
+    <t:Term> => AddExpression::Add(t, None),
+};
+
+Term: Term = {
+    <p:PowerExpression> <m:MultiplyOperator> <p2:PowerExpression> => Term::Term(p, Some((m, p2))),
+    <p:PowerExpression> => Term::Term(p, None),
+};
+
+PowerExpression: PowerExpression = {
+    <u:UnaryExpression> "**" <u2:UnaryExpression> => PowerExpression::Power(u, Some(u2)),
+    <u:UnaryExpression> => PowerExpression::Power(u, None),
+};
+
+UnaryExpression: UnaryExpression = {
+    <u:UnaryOperator> <p:PrimaryExpression> => UnaryExpression::Unary(p, Some(u)),
+    <p:PrimaryExpression> => UnaryExpression::Unary(p, None),
+};
+
+PrimaryExpression: PrimaryExpression = {
+    <c:Constant> => PrimaryExpression::Const(<>),
+    <v:VariableLabel> => PrimaryExpression::Label(<>),
+    "(" <e:Expression> ")" => PrimaryExpression::Expr(Box::new(<>)),
 };
 
 // TODO: add all types, this stores a litteral value, reusing variabletype enum
@@ -39,6 +87,31 @@ Constant: VariableValue = {
     <f:Real> => VariableValue::REAL(<>),
 };
 
+// Expression operators
+ComparisionOperator: ComparisonOperator = {
+    "<" => ComparisonOperator::LESS_THAN,
+    ">" => ComparisonOperator::GREATER_THAN,
+    "<=" => ComparisonOperator::LESS_EQUAL_THAN,
+    ">=" => ComparisonOperator::GREATER_EQUAL_THAN,
+};
+
+AddOperator: AddOperator = {
+    "+" => AddOperator::ADD,
+    "-" => AddOperator::SUBTRACT,
+};
+
+MultiplyOperator: MultiplyOperator = {
+    "*" => MultiplyOperator::MULTIPLY,
+    "/" => MultiplyOperator::DIVIDE,
+    r"(?i)MOD" => MultiplyOperator::MODULO,
+};
+
+UnaryOperator: UnaryOperator = {
+    "-" => UnaryOperator::NEGATIVE,
+    r"(?i)NOT" => UnaryOperator::NOT,
+};
+// end expression operators
+// end of expression branch
 
 
 // Start of VarList branch
@@ -91,6 +164,21 @@ match {
     ":", // Type delcaration operator
     ";", // Statement end
     ":=", // Assignment operator
+    "<", // Less than operator
+    ">", // Greater than operator
+    "<=", // Less than or equal to operator
+    ">=", // Greater than or equal to operator
+    "+", // Addition operator
+    "-", // Subtraction operator
+    "*", // Multiplication operator
+    "/", // Division operator
+    "**", // Power operator
+    r"(?i)MOD", // Modulo operator
+    r"(?i)NOT", // Not unary operator
+    r"=|<>", // Equality operator (= or <>)
+    r"&|(?i)AND", // And operator
+    r"(?i)XOR", // Xor operator
+    r"(?i)OR", // Or operator
     r"[0-9]+", // int
     r"((?i)true|false)", // bool
     r"\d*\.\d*", // real

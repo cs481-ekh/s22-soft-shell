@@ -44,6 +44,12 @@ mod tests {
     }
 
     #[test]
+    /// Check parser succeeds over subset 3 and 4 ST programs.
+    fn subset3_4_parse() {
+        parser_batch_test_st_folder("tests/test_inputs/st_subset_3-4");
+    }
+
+    #[test]
     /// Test addition sample function.
     fn test_add() {
         let result = lib_function_example_add(2, 2);
