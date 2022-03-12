@@ -50,6 +50,24 @@ mod tests {
     }
 
     #[test]
+    /// Check parser succeeds over subset 5 and 6 ST programs.
+    fn subset5_6_parse() {
+        parser_batch_test_st_folder("tests/test_inputs/st_subset_5-6");
+    }
+
+    #[test]
+    /// Check parser succeeds over subset 7 ST programs.
+    fn subset7_parse() {
+        parser_batch_test_st_folder("tests/test_inputs/st_subset_7");
+    }
+
+    #[test]
+    /// Check parser succeeds over parts of the ST language not currently included in a target subset.
+    fn stretch_parse() {
+        parser_batch_test_st_folder("tests/test_inputs/st_stretch");
+    }
+
+    #[test]
     /// Test addition sample function.
     fn test_add() {
         let result = lib_function_example_add(2, 2);
