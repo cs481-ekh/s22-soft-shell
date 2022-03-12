@@ -2,14 +2,18 @@
 use crate::ast::{Program, VariableKind, VariableValue};
 use crate::read_file;
 lalrpop_mod!(pub parser);
+
+use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 
+#[derive(Debug, PartialEq)]
 /// All information stored about a variable.
-struct VariableInfo {
-    var_value: VariableValue,
-    var_kind: VariableKind,
+pub struct VariableInfo {
+    pub var_value: VariableValue,
+    pub var_kind: VariableKind,
 }
 
+#[derive(Debug)]
 /// Program context struct which stores the symbol table and other long-lived state information of
 /// the ST program.
 pub struct ProgContext {
@@ -60,8 +64,19 @@ impl ProgContext {
         };
         self.symbols.insert(String::from(name), new_var_info);
     }
+
+    /// Gets a variable from the symbol table with the given name
+    pub fn get_var(&mut self, name: String) -> Option<&VariableInfo> {
+        self.symbols.get(&name)
+    }
+
+    /// Gets all variables from the symbol table, returns an iterator
+    pub fn get_all_vars(&mut self) -> Iter<'_, String, VariableInfo> {
+        self.symbols.iter()
+    }
 }
 
+#[derive(Debug)]
 /// Main struct for controlling program execution
 pub struct ProgHandle {
     statement_counter: u32,

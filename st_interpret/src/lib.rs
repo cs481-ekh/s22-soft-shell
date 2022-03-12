@@ -33,7 +33,7 @@ pub fn read_file(file_path: &str) -> String {
 #[cfg(test)]
 mod tests {
     use crate::ast::{VariableKind, VariableValue};
-    use crate::prog_handle::ProgContext;
+    use crate::prog_handle::{ProgContext, VariableInfo};
     use crate::{lib_function_example_add, parser, read_file};
     use std::fs;
 
@@ -81,6 +81,17 @@ mod tests {
             VariableKind::NORMAL,
             VariableValue::INT(10),
         );
+        let result = prog_context.get_var(String::from("variable"));
+        let value = match result {
+            None => VariableValue::INT(0),
+            Some(v) => v.var_value.clone(),
+        };
+        assert_eq!(VariableValue::INT(10), value);
+        let kind = match result {
+            None => VariableKind::INPUT,
+            Some(v) => v.var_kind,
+        };
+        assert_eq!(VariableKind::NORMAL, kind);
     }
 
     #[test]
@@ -92,6 +103,17 @@ mod tests {
             VariableKind::NORMAL,
             VariableValue::BOOL(false),
         );
+        let result = prog_context.get_var(String::from("variable"));
+        let value = match result {
+            None => VariableValue::BOOL(true),
+            Some(v) => v.var_value.clone(),
+        };
+        assert_eq!(VariableValue::BOOL(false), value);
+        let kind = match result {
+            None => VariableKind::INPUT,
+            Some(v) => v.var_kind,
+        };
+        assert_eq!(VariableKind::NORMAL, kind);
     }
 
     #[test]
@@ -103,6 +125,69 @@ mod tests {
             VariableKind::NORMAL,
             VariableValue::REAL(1.5),
         );
+        let result = prog_context.get_var(String::from("variable"));
+        let value = match result {
+            None => VariableValue::REAL(0.0),
+            Some(v) => v.var_value.clone(),
+        };
+        assert_eq!(VariableValue::REAL(1.5), value);
+        let kind = match result {
+            None => VariableKind::INPUT,
+            Some(v) => v.var_kind,
+        };
+        assert_eq!(VariableKind::NORMAL, kind);
+    }
+
+    #[test]
+    /// Test adding multiple variables to a ProgContext
+    fn test_get_vars() {
+        let mut prog_context = ProgContext::new();
+        prog_context.add_var(
+            String::from("variable0"),
+            VariableKind::NORMAL,
+            VariableValue::REAL(1.5),
+        );
+        prog_context.add_var(
+            String::from("variable1"),
+            VariableKind::NORMAL,
+            VariableValue::BOOL(false),
+        );
+        prog_context.add_var(
+            String::from("variable2"),
+            VariableKind::NORMAL,
+            VariableValue::INT(10),
+        );
+        let v0 = VariableInfo {
+            var_value: VariableValue::REAL(1.5),
+            var_kind: VariableKind::NORMAL,
+        };
+        let v1 = VariableInfo {
+            var_value: VariableValue::BOOL(false),
+            var_kind: VariableKind::NORMAL,
+        };
+        let v2 = VariableInfo {
+            var_value: VariableValue::INT(10),
+            var_kind: VariableKind::NORMAL,
+        };
+        let s0 = String::from("variable0");
+        let s1 = String::from("variable1");
+        let s2 = String::from("variable2");
+        let vars = prog_context.get_all_vars();
+        for (name, var) in vars {
+            println!("{}", name);
+            if name.eq(&s0) {
+                println!("matched {}", s0);
+                assert_eq!(v0, *var);
+            } else if name.eq(&s1) {
+                println!("matched {}", s1);
+                assert_eq!(v1, *var);
+            } else if name.eq(&s2) {
+                println!("matched {}", s2);
+                assert_eq!(v2, *var);
+            } else {
+                assert!(false);
+            }
+        }
     }
 
     #[test]
@@ -117,7 +202,17 @@ mod tests {
 
         prog_context.update_var("myvar", VariableValue::INT(5));
 
-        // TODO: check that the value is as expected
+        let result = prog_context.get_var(String::from("myvar"));
+        let value = match result {
+            None => VariableValue::INT(0),
+            Some(v) => v.var_value.clone(),
+        };
+        assert_eq!(VariableValue::INT(5), value);
+        let kind = match result {
+            None => VariableKind::INPUT,
+            Some(v) => v.var_kind,
+        };
+        assert_eq!(VariableKind::NORMAL, kind);
     }
 
     #[test]
