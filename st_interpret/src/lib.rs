@@ -8,6 +8,7 @@ use std::fs;
 
 #[macro_use]
 extern crate lalrpop_util;
+extern crate core;
 
 lalrpop_mod!(pub parser);
 

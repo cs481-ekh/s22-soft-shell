@@ -77,7 +77,7 @@ UnaryExpression: UnaryExpression = {
 
 PrimaryExpression: PrimaryExpression = {
     <c:Constant> => PrimaryExpression::Const(<>),
-    <v:VariableLabel> => PrimaryExpression::Label(<>),
+    <v:VariableLabel> => PrimaryExpression::VarName(<>),
     "(" <e:Expression> ")" => PrimaryExpression::Expr(Box::new(<>)),
 };
 
