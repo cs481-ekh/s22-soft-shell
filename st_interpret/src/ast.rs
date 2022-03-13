@@ -57,7 +57,7 @@ pub enum AND_Expression {
 
 #[derive(Debug)]
 pub enum Comparison {
-    Comp(EquExpression, Option<EquExpression>),
+    Comp_Eq(EquExpression, Option<(bool, EquExpression)>),
 }
 
 #[derive(Debug)]

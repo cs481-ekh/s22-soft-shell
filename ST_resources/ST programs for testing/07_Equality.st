@@ -6,7 +6,7 @@ PROGRAM 07_Equality
 		d : bool;
     END_VAR
 		a := TRUE = False; // Result = False
-		b := false <> true; // Result = False
+		b := false <> true; // Result = True
 		c := False = FALSE; // Result = True
-		d := tRuE <> True; // Result = True
+		d := tRuE <> True; // Result = False
 END_PROGRAM

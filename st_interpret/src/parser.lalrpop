@@ -45,8 +45,9 @@ AND_Expression: AND_Expression = {
 };
 
 Comparison: Comparison = {
-    <e:EquExpression> r"=|<>" <e2:EquExpression> => Comparison::Comp(e, Some(e2)),
-    <e:EquExpression> => Comparison::Comp(e, None),
+    <e:EquExpression> "=" <e2:EquExpression> => Comparison::Comp_Eq(e, Some((true, e2))),
+    <e:EquExpression> "<>" <e2:EquExpression> => Comparison::Comp_Eq(e, Some((false, e2))),
+    <e:EquExpression> => Comparison::Comp_Eq(e, None),
 };
 
 EquExpression: EquExpression = {
@@ -175,7 +176,8 @@ match {
     "**", // Power operator
     r"(?i)MOD", // Modulo operator
     r"(?i)NOT", // Not unary operator
-    r"=|<>", // Equality operator (= or <>)
+    "=", // Equality operator
+    "<>", // Not equal operator
     r"&|(?i)AND", // And operator
     r"(?i)XOR", // Xor operator
     r"(?i)OR", // Or operator
