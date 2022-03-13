@@ -68,6 +68,13 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "assertion failed: parse_result.is_ok()")]
+    /// Check parser correctly finds incorrect st files
+    fn fail_parse() {
+        parser_batch_test_st_folder("tests/test_inputs/st_failure/parse_fail");
+    }
+
+    #[test]
     /// Test addition sample function.
     fn test_add() {
         let result = lib_function_example_add(2, 2);
