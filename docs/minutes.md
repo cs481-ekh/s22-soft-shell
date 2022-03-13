@@ -1,3 +1,28 @@
+Meeting 3/13/2022
+
+Scribe: Rob
+
+Present: All
+
+Absent: none
+
+Goals: Plan Sprint 3
+
+- Anna will be the new Scrum Master, Natalie will be the Product Owner, and Rob will be the scribe
+
+- Based on the assumption that Sprint 3 is 3 weeks due to Spring Break
+
+- Built a new project board for Sprint 3 as well as a new Milestone for 4
+
+- Goal for Sprint 3 is work towards Milestone 4
+	- set up C API and integration test
+	- Working to interpret a program up to subset 7
+	- create user guide explaining API including usage examples
+	
+- Generated user stories and tasks for Sprint 3
+
+- In the planning we came up with 10 tasks and assigned them to members of the team
+__________________________________________________________________________
 Meeting 3/11/2022
 
 Scribe: Anna
