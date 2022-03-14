@@ -34,7 +34,9 @@ pub fn read_file(file_path: &str) -> String {
 #[cfg(test)]
 mod tests {
     use crate::ast::{VariableKind, VariableValue};
-    use crate::prog_handle::{ProgContext, VariableInfo};
+    use crate::prog_handle::{
+        st_program_load, st_program_run, ProgContext, ProgHandle, VariableInfo,
+    };
     use crate::{lib_function_example_add, parser, read_file};
     use std::fs;
 
@@ -252,6 +254,14 @@ mod tests {
         );
 
         prog_context.update_var("myvar", VariableValue::REAL(5.0));
+    }
+
+    #[test]
+    fn run_program() {
+        let mut context = ProgContext::new();
+        let ret_val = st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context);
+
+        st_program_run(ret_val);
     }
 
     #[test]
