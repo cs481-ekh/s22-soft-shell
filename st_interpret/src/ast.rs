@@ -22,7 +22,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 /// Trait containing functionality for executable AST nodes
-trait AstNode {
+pub trait AstNode {
     /// Execute this node in the given context
     fn execute(self, context: &mut ProgContext) -> Option<VariableValue>;
 }

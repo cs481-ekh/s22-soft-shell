@@ -3,6 +3,9 @@ use crate::ast::{Program, VariableKind, VariableValue};
 use crate::read_file;
 lalrpop_mod!(pub parser);
 
+use crate::ast::Assignment;
+use crate::ast::AstNode;
+use crate::ast::Program::Prog;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 
@@ -94,4 +97,50 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> ProgHandle {
         ast: program_ast,
         context,
     }
+}
+
+// function steps through one state from list stored in ast
+// inputs: Program Handle
+// outputs: Boolean used for determining when program is complete. True means you
+//          have excecuted all statements in the list. can be expanded to use
+//          with error detection
+pub fn st_program_step(mut ProgramHandle: ProgHandle) -> bool {
+    //for debugging
+    //println!("step: {count}", count = ProgramHandle.statement_counter);
+
+    // get context
+    let context: &mut ProgContext = &mut ProgramHandle.context;
+
+    //get statement counter
+    let counter: u32 = ProgramHandle.statement_counter;
+    let num_usize: usize = counter as usize;
+
+    //get program node
+    let program = ProgramHandle.ast;
+
+    //use to get access to Vec<Assignments> as statements
+    let Prog(_, all_dec_lists, statements) = program;
+
+    //if first step then excecute declarations list
+    if counter == 0 {
+        if let Some(program_dec_lists) = all_dec_lists {
+            for dec_list in program_dec_lists {
+                dec_list.execute(context);
+            }
+        }
+    }
+
+    //execute current statement
+    let statement: Assignment = statements[num_usize].clone();
+    statement.execute(context);
+
+    //check if program is complete
+    if num_usize < statements.len() - 1 {
+        //increment to the next statement
+        ProgramHandle.statement_counter += 1;
+    } else {
+        return true;
+    }
+
+    false
 }
