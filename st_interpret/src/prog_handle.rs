@@ -57,31 +57,36 @@ impl ProgContext {
 
     /// Update a variable's value in the symbol table if possible
     pub fn update_var(&mut self, name: &str, new_value: VariableValue) {
+        let name = name.to_ascii_lowercase();
         if let Some(f) = &mut self.function_context {
-            f.update_var(name, new_value);
+            f.update_var(&name, new_value);
             return;
         }
         // retrieve current value
-        let current_var_info = self
-            .symbols
-            .remove(name)
-            .expect("Attempted to update a variable that does not exist");
+        let current_var_info = self.symbols.remove(&name).expect(&format!(
+            "Attempted to update a variable '{}' that does not exist",
+            name
+        ));
 
         // disallow updating to a different ST variable type
         if std::mem::discriminant(&current_var_info.var_value) != std::mem::discriminant(&new_value)
         {
-            panic!("Cannot change the type of a variable");
+            panic!(
+                "Cannot change the type of a variable (previous '{:?}', new '{:?})",
+                current_var_info.var_value, &new_value
+            );
         }
 
         let new_var_info = VariableInfo {
             var_value: new_value,
             ..current_var_info
         };
-        self.symbols.insert(String::from(name), new_var_info);
+        self.symbols.insert(name, new_var_info);
     }
 
     /// Gets a variable from the symbol table with the given name
     pub fn get_var(&self, name: String) -> Option<&VariableInfo> {
+        let name = name.to_ascii_lowercase();
         if let Some(f) = &self.function_context {
             let function_result = f.get_var(name.clone());
             return match function_result {
@@ -166,10 +171,10 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> ProgHandle {
 
 /// Run a ST file
 /// ProgramHandle prog_handle = st_program_load(“testprogram.st”, context);
-pub fn st_program_run(mut ProgramHandle: ProgHandle) {
+pub fn st_program_run(ProgramHandle: &mut ProgHandle) {
     let context: &mut ProgContext = &mut ProgramHandle.context;
 
-    let program = ProgramHandle.ast;
+    let program = &ProgramHandle.ast;
 
     program.execute(context);
 
@@ -190,7 +195,7 @@ pub fn st_program_run(mut ProgramHandle: ProgHandle) {
 // outputs: Boolean used for determining when program is complete. True means you
 //          have excecuted all statements in the list. can be expanded to use
 //          with error detection
-pub fn st_program_step(mut ProgramHandle: ProgHandle) -> bool {
+pub fn st_program_step(ProgramHandle: &mut ProgHandle) -> bool {
     //for debugging
     //println!("step: {count}", count = ProgramHandle.statement_counter);
 
@@ -202,7 +207,7 @@ pub fn st_program_step(mut ProgramHandle: ProgHandle) -> bool {
     let num_usize: usize = counter as usize;
 
     //get program node
-    let program = ProgramHandle.ast;
+    let program = &ProgramHandle.ast;
 
     //use to get access to Vec<Assignments> as statements
     let Prog(_, all_dec_lists, statements) = program;

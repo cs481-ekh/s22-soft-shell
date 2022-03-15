@@ -78,6 +78,72 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
+    /// Check subset 1 programs execute correctly
+    /// TODO: re-enable after implementing type coercion in assignments
+    fn execute_subset_1() {
+        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_1");
+    }
+
+    #[test]
+    /// Check subset 3-4 programs execute correctly
+    fn execute_subset_3_4() {
+        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_3-4");
+    }
+
+    #[test]
+    /// Check subset 5-6 programs execute correctly
+    fn execute_subset_5_6() {
+        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_5-6");
+    }
+
+    #[test]
+    /// Check subset 7 programs execute correctly
+    fn execute_subset_7() {
+        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_7");
+    }
+
+    #[test]
+    /// Check stretch (no assigned subset) programs execute correctly
+    fn execute_stretch() {
+        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_stretch");
+    }
+
+    #[test]
+    /// Example of a basic interpretation test
+    fn execute_basic() {
+        let mut prog_handle = st_program_load(
+            "tests/test_inputs/st_subset_1/01_mixed.st",
+            ProgContext::new(),
+        );
+        st_program_run(&mut prog_handle);
+        assert_eq!(
+            prog_handle
+                .context
+                .get_var(String::from("a"))
+                .unwrap()
+                .var_value,
+            VariableValue::REAL(1.2)
+        );
+        assert_eq!(
+            prog_handle
+                .context
+                .get_var(String::from("b"))
+                .unwrap()
+                .var_value,
+            VariableValue::INT(5)
+        );
+        assert_eq!(
+            prog_handle
+                .context
+                .get_var(String::from("c"))
+                .unwrap()
+                .var_value,
+            VariableValue::BOOL(true)
+        );
+    }
+
+    #[test]
     /// Test addition sample function.
     fn test_add() {
         let result = lib_function_example_add(2, 2);
@@ -259,9 +325,9 @@ mod tests {
     #[test]
     fn run_program() {
         let mut context = ProgContext::new();
-        let ret_val = st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context);
+        let mut ret_val = st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context);
 
-        st_program_run(ret_val);
+        st_program_run(&mut ret_val);
     }
 
     #[test]
@@ -296,6 +362,34 @@ mod tests {
 
             println!("{:?}\n", parse_result);
             assert!(parse_result.is_ok());
+        }
+    }
+
+    /// Test execution of all ST files in a folder.
+    /// Simple runs the each program and asserts it contains a boolean variable 'ST_TESTING_RESULT'
+    /// that is true after execution completes. This allows creating ST example files that
+    /// essentially include their own assertions about their functionality.
+    fn interpreter_batch_test_st_folder(folder_path: &str) {
+        println!("Executing all ST files in folder {}", folder_path);
+        let paths = fs::read_dir(folder_path).unwrap();
+
+        for path in paths {
+            let path = path.unwrap().path();
+            let file_name = path.to_str().unwrap();
+            println!("Executing file {}", file_name);
+
+            let mut prog_handle = st_program_load(file_name, ProgContext::new());
+            st_program_run(&mut prog_handle);
+
+            println!("Program handle dump: {:#?}", prog_handle);
+            assert_eq!(
+                prog_handle
+                    .context
+                    .get_var(String::from("ST_TESTING_RESULT"))
+                    .unwrap()
+                    .var_value,
+                VariableValue::BOOL(true)
+            );
         }
     }
 }

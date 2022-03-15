@@ -15,7 +15,7 @@ pub Program: Program = {
 // Start of StatementList branch
 StatementList: Vec<Assignment> = {
     <s:Statement> ";" => {let mut v = Vec::new(); v.push(<>); v},
-    <s:Statement> ";" <mut sl:StatementList> => {sl.push(s); sl}
+    <s:Statement> ";" <mut sl:StatementList> => {sl.insert(0, s); sl}
 };
 
 //TODO, type needs to be changed to something more general, also in statement list

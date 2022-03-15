@@ -3,7 +3,6 @@
 use crate::ast::AND_Expression::And;
 use crate::ast::AddExpression::Add;
 use crate::ast::Assignment::Asgn;
-use crate::ast::BoolOp::XOR;
 use crate::ast::Comparison::Comp_Eq;
 use crate::ast::ComparisonOperator::*;
 use crate::ast::EquExpression::Equ;
@@ -24,7 +23,7 @@ use std::time::Duration;
 /// Trait containing functionality for executable AST nodes
 pub trait AstNode {
     /// Execute this node in the given context
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue>;
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue>;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -59,7 +58,7 @@ pub enum Expression {
 }
 
 impl AstNode for Expression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Expr(left, right) = self;
         let right = match right {
             Some(expr) => Some(expr.execute(context).unwrap()),
@@ -79,7 +78,7 @@ pub enum XOR_Expression {
 }
 
 impl AstNode for XOR_Expression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Xor(left, right) = self;
         let right = match right {
             Some(expr) => Some(expr.execute(context).unwrap()),
@@ -99,7 +98,7 @@ pub enum AND_Expression {
 }
 
 impl AstNode for AND_Expression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let And(left, right) = self;
         let right = match right {
             Some(expr) => Some(expr.execute(context).unwrap()),
@@ -119,13 +118,13 @@ pub enum Comparison {
 }
 
 impl AstNode for Comparison {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         // TODO: just performs an equals comparison right now, but this node should be able to represent both equals and not-equals comparison
         let Comp_Eq(left, op_and_right) = self;
         let left = left.execute(context).unwrap();
         if let Some((is_equals, right)) = op_and_right {
             let right = right.execute(context).unwrap();
-            let result = if is_equals {
+            let result = if *is_equals {
                 left == right
             } else {
                 left != right
@@ -143,12 +142,16 @@ pub enum EquExpression {
 }
 
 impl AstNode for EquExpression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Equ(left, op_and_right) = self;
         let left = left.execute(context).unwrap();
         if let Some((op, right)) = op_and_right {
             let right = right.execute(context).unwrap();
-            Some(math_operation_result(left, MathOp::Comparison(op), right))
+            Some(math_operation_result(
+                left,
+                MathOp::Comparison(op.clone()),
+                right,
+            ))
         } else {
             Some(left)
         }
@@ -161,12 +164,12 @@ pub enum AddExpression {
 }
 
 impl AstNode for AddExpression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Add(left, op_and_right) = self;
         let left = left.execute(context).unwrap();
         if let Some((op, right)) = op_and_right {
             let right = right.execute(context).unwrap();
-            Some(math_operation_result(left, MathOp::Add(op), right))
+            Some(math_operation_result(left, MathOp::Add(op.clone()), right))
         } else {
             Some(left)
         }
@@ -179,12 +182,16 @@ pub enum Term {
 }
 
 impl AstNode for Term {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let TermInstance(left, op_and_right) = self;
         let left = left.execute(context).unwrap();
         if let Some((op, right)) = op_and_right {
             let right = right.execute(context).unwrap();
-            Some(math_operation_result(left, MathOp::Multiply(op), right))
+            Some(math_operation_result(
+                left,
+                MathOp::Multiply(op.clone()),
+                right,
+            ))
         } else {
             Some(left)
         }
@@ -197,7 +204,7 @@ pub enum PowerExpression {
 }
 
 impl AstNode for PowerExpression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Power(left, right) = self;
         let left = left.execute(context).unwrap();
         let result = match right {
@@ -222,7 +229,7 @@ pub enum UnaryExpression {
 }
 
 impl AstNode for UnaryExpression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Unary(expression, operator) = self;
         let expressionValue = expression.execute(context).unwrap();
         let result = match operator {
@@ -258,12 +265,16 @@ pub enum PrimaryExpression {
 }
 
 impl AstNode for PrimaryExpression {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         match self {
-            PrimaryExpression::Const(value) => Some(value),
-            PrimaryExpression::VarName(var_name) => {
-                Some(context.get_var(*var_name).unwrap().var_value.clone())
-            }
+            PrimaryExpression::Const(value) => Some(value.clone()),
+            PrimaryExpression::VarName(var_name) => Some(
+                context
+                    .get_var(*(*var_name).clone())
+                    .unwrap()
+                    .var_value
+                    .clone(),
+            ),
             PrimaryExpression::Expr(expression) => Some(expression.execute(context).unwrap()),
         }
     }
@@ -320,13 +331,13 @@ pub enum VarsDec {
 }
 
 impl AstNode for VarsDec {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let DecList(kind, decs) = self;
         for var_dec in decs.iter() {
             let var_name = (**var_dec.0).clone();
             let var_type = &*var_dec.1;
 
-            context.add_var(var_name, kind, var_type.clone());
+            context.add_var(var_name, kind.clone(), var_type.clone());
         }
 
         None
@@ -340,9 +351,9 @@ pub enum Assignment {
 }
 
 impl AstNode for Assignment {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Asgn(var_name, new_value) = self;
-        let var_name = *var_name;
+        let var_name = *var_name.clone();
 
         let new_value = new_value.execute(context).unwrap();
         context.update_var(&var_name, new_value);
@@ -359,7 +370,7 @@ pub enum Program {
 }
 
 impl AstNode for Program {
-    fn execute(self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Prog(_, all_dec_lists, statements) = self;
 
         // process variable declarations lists if present
@@ -471,6 +482,7 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (_, _) => panic!("Attempted to subtract incompatible types"),
         },
         MathOp::Exponentiate => match (left, right) {
+            (INT(x), INT(y)) => INT(checked_pow(x, y as usize).unwrap()),
             (BYTE(x), BYTE(y)) => BYTE(checked_pow(x, y as usize).unwrap()),
             (WORD(x), WORD(y)) => WORD(checked_pow(x, y as usize).unwrap()),
             (UINT(x), UINT(y)) => UINT(checked_pow(x, y as usize).unwrap()),
