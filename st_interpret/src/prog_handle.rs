@@ -9,29 +9,37 @@ use crate::ast::Program::Prog;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// All information stored about a variable.
 pub struct VariableInfo {
     pub var_value: VariableValue,
     pub var_kind: VariableKind,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Program context struct which stores the symbol table and other long-lived state information of
 /// the ST program.
 pub struct ProgContext {
     symbols: HashMap<String, VariableInfo>,
+    function_context: Option<Box<ProgContext>>,
+    function_blocks: HashMap<String, Box<ProgContext>>,
 }
 
 impl ProgContext {
     pub fn new() -> Self {
         Self {
             symbols: HashMap::new(),
+            function_context: None,
+            function_blocks: HashMap::new(),
         }
     }
 
-    /// Adds a variable to the symbol table with the associated value. If there is already a variable with the given name, the value is updated.
+    /// Adds a variable to the symbol table with the associated value
     pub fn add_var(&mut self, name: String, kind: VariableKind, value: VariableValue) {
+        if let Some(f) = &mut self.function_context {
+            f.add_var(name, kind, value);
+            return;
+        }
         let var_info = VariableInfo {
             var_value: value,
             var_kind: kind,
@@ -49,6 +57,10 @@ impl ProgContext {
 
     /// Update a variable's value in the symbol table if possible
     pub fn update_var(&mut self, name: &str, new_value: VariableValue) {
+        if let Some(f) = &mut self.function_context {
+            f.update_var(name, new_value);
+            return;
+        }
         // retrieve current value
         let current_var_info = self
             .symbols
@@ -69,13 +81,66 @@ impl ProgContext {
     }
 
     /// Gets a variable from the symbol table with the given name
-    pub fn get_var(&mut self, name: String) -> Option<&VariableInfo> {
+    pub fn get_var(&self, name: String) -> Option<&VariableInfo> {
+        if let Some(f) = &self.function_context {
+            let function_result = f.get_var(name.clone());
+            return match function_result {
+                Some(_) => function_result,
+                _ => {
+                    let result = self.symbols.get(&name);
+                    match result {
+                        Some(var) => {
+                            if var.var_kind == VariableKind::GLOBAL {
+                                result
+                            } else {
+                                None
+                            }
+                        }
+                        _ => None,
+                    }
+                }
+            };
+        }
         self.symbols.get(&name)
     }
 
     /// Gets all variables from the symbol table, returns an iterator
-    pub fn get_all_vars(&mut self) -> Iter<'_, String, VariableInfo> {
-        self.symbols.iter()
+    pub fn get_all_vars(&self) -> Iter<'_, String, VariableInfo> {
+        return match &self.function_context {
+            Some(f) => f.get_all_vars(),
+            _ => self.symbols.iter(),
+        };
+    }
+
+    /// Initializes the function context
+    pub fn start_function(&mut self) {
+        self.function_context = Some(Box::new(ProgContext::new()));
+    }
+
+    /// Sets the function context to None
+    pub fn end_function(&mut self) {
+        self.function_context = None;
+    }
+
+    /// Initializes the function block context. If a function block with the same name has
+    /// already been called, the context from before is loaded. Otherwise, a new context is created.
+    pub fn start_function_block(&mut self, function_name: String) {
+        self.function_context = match self
+            .function_blocks
+            .remove(&function_name.to_ascii_lowercase())
+        {
+            Some(context) => Some(context),
+            _ => Some(Box::new(ProgContext::new())),
+        }
+    }
+
+    /// Saves the function block context. The function name must be provided.
+    pub fn end_function_block(&mut self, function_name: String) {
+        if let Some(context) = &self.function_context {
+            self.function_blocks
+                .insert(function_name.to_ascii_lowercase(), (*context).clone());
+        }
+        self.function_context = None;
     }
 }
 
