@@ -3,6 +3,7 @@
 mod ast;
 mod capi;
 pub mod prog_handle;
+pub use ast::VariableValue;
 
 use std::fs;
 
