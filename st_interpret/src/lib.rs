@@ -326,7 +326,6 @@ mod tests {
     fn run_program() {
         let mut context = ProgContext::new();
         let mut ret_val = st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context);
-
         st_program_run(&mut ret_val);
     }
 

@@ -172,22 +172,13 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> ProgHandle {
 /// Run a ST file
 /// ProgramHandle prog_handle = st_program_load(“testprogram.st”, context);
 pub fn st_program_run(ProgramHandle: &mut ProgHandle) {
-    let context: &mut ProgContext = &mut ProgramHandle.context;
+    loop {
+        let mut ret_val = st_program_step(ProgramHandle);
 
-    let program = &ProgramHandle.ast;
-
-    program.execute(context);
-
-    // Once I have the code above working, I was going to try below
-    // loop {
-    //     let mut ret_val = st_program_step(ProgHandle);
-    //
-    //     if ret_val {
-    //         // For debugging
-    //         println!("Program ran successfully");
-    //         break;
-    //     }
-    // }
+        if ret_val {
+            break;
+        }
+    }
 }
 
 // function steps through one state from list stored in ast
