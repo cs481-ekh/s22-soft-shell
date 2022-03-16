@@ -1,3 +1,33 @@
+Meeting 3/16/2022
+
+Scribe: Rob
+
+Present: All + Go West
+
+Absent: none
+
+Goals: Update Go West on Progress & Demo Interpreter
+
+- Go West is ok with going to everyother week
+
+- Carson demod the interpreter
+
+- Go West had questions about scoping and nested scopes
+	- Doug has already been researching this issue with Structured Text and more to follow
+
+- Statement list discussion in regards to a while loop
+	- possibly use a stack of program counters to keep track
+	- there will be an additional meeting to discuss this further
+	
+- Discussion of why run and step are not methods in the program handle
+	- currently, run and step are functions
+	- the C API will need to be functions
+
+- Accessing the context via the program handle
+	- this is not able to be done in C
+	- instead of passing the value of the context pass a reference
+__________________________________________________________________________
+
 Meeting 3/13/2022
 
 Scribe: Rob
