@@ -6,10 +6,10 @@ use crate::ast::*;
 
 grammar;
 
-// TODO change varible label to somthing specific to program name conventions
+// start of Progam
 pub Program: Program = {
-    r"(?i)PROGRAM" <vl:VariableLabel> <v:VarList> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(vl, Some(v), s),
-    r"(?i)PROGRAM" <vl:VariableLabel> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(vl, None, s)
+    <pl:ProgramLabel> <v:VarList> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, Some(v), s),
+    <pl:ProgramLabel> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, None, s)
 };
 
 // Start of StatementList branch
@@ -144,8 +144,9 @@ VariableValue: VariableValue = {
     r"(?i)real" => VariableValue::REAL(0.0)
 };
 
-//TODO: include ST variable naming rules
+
 VariableLabel: Box<String> = <s:VAR_NAME> => Box::new(s.to_string());
+ProgramLabel: Box<String> = <s:PROG_NAME> => Box::new(s.to_string());
 
 Int: i16 = <s:r"[0-9]+"> => i16::from_str(s).unwrap();
 Bool: bool = <s:r"((?i)true|false)"> => bool::from_str(&s.to_lowercase()).unwrap();
@@ -158,7 +159,7 @@ match {
     r"(?i)real",
     "(",
     ")",
-    r"(?i)PROGRAM",
+    r"(?i)PROGRAM[ ]\w+" => PROG_NAME,
     r"(?i)END_PROGRAM",
     r"(?i)END_VAR",
     r"(?i)VAR",
@@ -189,6 +190,7 @@ match {
     r"\s*" => { },
     r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
     r"\(\*([^*]|[\r\n]|(\*+([^*\)]|[\r\n])))*\*+\)" => { }, // `/* comment */`
+    
 } else {
-    r"\w+" => VAR_NAME,
+    r"[a-zA-Z][a-zA-Z_$0-9]*" => VAR_NAME,
 }
