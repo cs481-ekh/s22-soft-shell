@@ -5,6 +5,7 @@
 BSU Capstone senior project - Structured Text Interpreter
 
 ## Dev Environment Setup
+From inside st_interpret directory:
 
 Install cargo-c into cargo for automatic C header file and build management:
 
