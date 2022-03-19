@@ -1,9 +1,9 @@
 /// Program state and current execution information.
-use crate::ast::{Program, VariableKind, VariableValue};
+use crate::ast::{Program, Statement, VariableKind, VariableValue};
 use crate::read_file;
 lalrpop_mod!(pub parser);
 
-use crate::ast::Assignment;
+use crate::ast::AssignmentStatement;
 use crate::ast::AstNode;
 use crate::ast::Program::Prog;
 use std::collections::hash_map::Iter;
@@ -212,9 +212,17 @@ pub fn st_program_step(ProgramHandle: &mut ProgHandle) -> bool {
         }
     }
 
+    //TODO Change to accomodate if and while loops, shimmed for now assuming all statements are assignments
     //execute current statement
-    let statement: Assignment = statements[num_usize].clone();
-    statement.execute(context);
+    let statement: Statement = statements[num_usize].clone();
+
+    match statement {
+        Statement::Asgn(asgn) => {
+            asgn.execute(context);
+        }
+        Statement::Iter(iter) => (),     //TODO Add me!
+        Statement::Select(select) => (), //TODO Add me!
+    }
 
     //check if program is complete
     if num_usize < statements.len() - 1 {

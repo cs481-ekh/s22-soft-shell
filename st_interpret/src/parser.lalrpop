@@ -13,18 +13,49 @@ pub Program: Program = {
 };
 
 // Start of StatementList branch
-StatementList: Vec<Assignment> = {
+StatementList: Vec<Statement> = {
     <s:Statement> ";" => {let mut v = Vec::new(); v.push(<>); v},
     <s:Statement> ";" <mut sl:StatementList> => {sl.insert(0, s); sl}
 };
 
-//TODO, type needs to be changed to something more general, also in statement list
-Statement: Assignment = {
-    <a:AssignmentStatement> => a
+Statement: Statement = {
+    AssignmentStatement => Statement::Asgn(<>),
+    SelectionStatement => Statement::Select(<>),
+    IterationStatement => Statement::Iter(<>),
 };
 
-AssignmentStatement: Assignment = {
-    <v:VariableLabel> ":=" <e:Expression> => Assignment::Asgn(<>)
+SelectionStatement: SelectionStatement = {
+    IfStatement => SelectionStatement::If(<>),
+};
+
+IfStatement: IfStatement = {
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> r"(?i)END_IF" => IfStatement::If({let mut v = Vec::new(); v.push((<>)); v}, None),
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> <el:Else> r"(?i)END_IF" => IfStatement::If({let mut v = Vec::new(); v.push((e, s)); v}, Some(el)),
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> <mut ei:ElseIf> r"(?i)END_IF" => IfStatement::If({ei.insert(0, (e, s)); ei}, None),
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> <mut ei:ElseIf> <el:Else> r"(?i)END_IF" => IfStatement::If({ei.insert(0, (e, s)); ei}, Some(el)),
+};
+
+// Utility production rule for if statements
+ElseIf: Vec<(Expression, Vec<Statement>)> = {
+    r"(?i)ElSEIF" <e:Expression> r"(?i)THEN" <s:StatementList> => {let mut v = Vec::new(); v.push((<>)); v},
+    r"(?i)ElSEIF" <e:Expression> r"(?i)THEN" <s:StatementList> <mut ei:ElseIf> => {ei.insert(0, (e, s)); ei},
+};
+
+// Utility production rule for if statements
+Else: Vec<Statement> = {
+    r"(?i)ELSE" <s:StatementList> => s,
+};
+
+IterationStatement: IterationStatement = {
+    WhileStatement => IterationStatement::While(<>),
+};
+
+WhileStatement: WhileStatement = {
+    r"(?i)WHILE" <e:Expression> r"(?i)DO" <s:StatementList> r"(?i)END_WHILE" => WhileStatement::While(<>)
+};
+
+AssignmentStatement: AssignmentStatement = {
+    <v:VariableLabel> ":=" <e:Expression> => AssignmentStatement::Asgn(<>)
 };
 
 
@@ -185,7 +216,17 @@ match {
     r"[0-9]+", // int
     r"((?i)true|false)", // bool
     r"\d*\.\d*", // real
-    
+
+    // Statements
+    r"(?i)WHILE", // While loop
+    r"(?i)DO",
+    r"(?i)END_WHILE",
+    r"(?i)IF", // If statement
+    r"(?i)ElSEIF",
+    r"(?i)THEN",
+    r"(?i)ELSE",
+    r"(?i)END_IF",
+
     // Skip whitespace and comments
     r"\s*" => { },
     r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`

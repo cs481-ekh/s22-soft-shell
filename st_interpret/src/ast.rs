@@ -2,7 +2,7 @@
 
 use crate::ast::AND_Expression::And;
 use crate::ast::AddExpression::Add;
-use crate::ast::Assignment::Asgn;
+use crate::ast::AssignmentStatement::Asgn;
 use crate::ast::Comparison::Comp_Eq;
 use crate::ast::ComparisonOperator::*;
 use crate::ast::EquExpression::Equ;
@@ -344,13 +344,53 @@ impl AstNode for VarsDec {
     }
 }
 
+/// Representation of a generic statement
 #[derive(Debug, Clone)]
+pub enum Statement {
+    Asgn(AssignmentStatement),  // Assignment
+    Select(SelectionStatement), // If statement
+    Iter(IterationStatement),   // While loop
+}
+
+/// A selection statement
+#[derive(Debug, Clone)]
+pub enum SelectionStatement {
+    If(IfStatement),
+}
+
+/// Representation of an if statement
+///
+/// First value is a list of expressions and statement list touples.
+/// This represents the conditonal and it's codeblock for each level of the if else ladder.
+/// e.g the first touple in the list would be the "if", the second the "if-else", and the third the second "if-else"
+///
+/// The second value is an optional list of statements, this represents the optional final else of the if-else ladder.
+#[derive(Debug, Clone)]
+pub enum IfStatement {
+    If(Vec<(Expression, Vec<Statement>)>, Option<Vec<Statement>>),
+}
+
+/// A iteration statement
+#[derive(Debug, Clone)]
+pub enum IterationStatement {
+    While(WhileStatement),
+}
+
+/// Representation of a while loop
+///
+/// First value is the expression evaluated each loop, second is list of statements inside the while loop
+#[derive(Debug, Clone)]
+pub enum WhileStatement {
+    While(Expression, Vec<Statement>),
+}
+
 /// A single assignment statement.
-pub enum Assignment {
+#[derive(Debug, Clone)]
+pub enum AssignmentStatement {
     Asgn(Box<String>, Expression),
 }
 
-impl AstNode for Assignment {
+impl AstNode for AssignmentStatement {
     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Asgn(var_name, new_value) = self;
         let var_name = *var_name.clone();
@@ -366,29 +406,30 @@ impl AstNode for Assignment {
 /// First arg is name, Second arg is varlist, third is statement list
 #[derive(Debug, Clone)]
 pub enum Program {
-    Prog(Box<String>, Option<Vec<Box<VarsDec>>>, Vec<Assignment>),
+    Prog(Box<String>, Option<Vec<Box<VarsDec>>>, Vec<Statement>),
 }
 
-impl AstNode for Program {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
-        let Prog(_, all_dec_lists, statements) = self;
-
-        // process variable declarations lists if present
-        if let Some(program_dec_lists) = all_dec_lists {
-            for dec_list in program_dec_lists {
-                dec_list.execute(context);
-            }
-        }
-
-        // execute all statements (assignments) sequentially
-        for statement in statements {
-            statement.execute(context);
-        }
-
-        // this is the top level, so no evaluation value
-        None
-    }
-}
+// TODO: Fix, broken due to changes introduced in subset 6 and 7
+// impl AstNode for Program {
+//     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+//         let Prog(_, all_dec_lists, statements) = self;
+//
+//         // process variable declarations lists if present
+//         if let Some(program_dec_lists) = all_dec_lists {
+//             for dec_list in program_dec_lists {
+//                 dec_list.execute(context);
+//             }
+//         }
+//
+//         // execute all statements (assignments) sequentially
+//         for statement in statements {
+//             statement.execute(context);
+//         }
+//
+//         // this is the top level, so no evaluation value
+//         None
+//     }
+// }
 
 pub enum MathOp {
     Multiply(MultiplyOperator),

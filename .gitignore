@@ -1,5 +1,5 @@
 # Rust files
-st_interpret/Cargo.lock
+Cargo.lock
 st_interpret/target
 
 # Intellij files
