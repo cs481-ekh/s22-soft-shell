@@ -1,3 +1,32 @@
+Meeting 3/18/2022
+
+Scribe: Rob
+
+Present: All
+
+Absent: none
+
+Goals: Sprint 2 Retrospective and Sprint 3 Discussion
+
+- Run and Step implementation held up testing execution methods
+	- important for Sprint 3 is the update of the Step method to support while loops
+- How does everyone see their workload
+	- everyone seemed to feel the load was fine for each person; no complaints
+- Are there any tasks blocking workflow
+	- Parser will be worked on today, should unblock the execution development
+- Discussion of execution in While to allow for step over functionality
+- While and If implementation with step and run
+	- Proposed shifting list to a stack
+		- whatever is on the top of the stack will be executed
+		- executes a statement then push the statement list to the stack
+		- the method was demonstrated via screen share
+	- Another proposal was a tupple for the While that contained another vector
+	- If we used the stack method, how would we tell the user the line where the code failed?
+		- currently done with the program counter
+	- a counter proposal is to implement a stack in the step function
+		- this then wouldn't require change to the AST
+- Meeting reached the hour mark, discussion ongoing, plan is to take the conversation off line	
+__________________________________________________________________________
 Meeting 3/16/2022
 
 Scribe: Rob
