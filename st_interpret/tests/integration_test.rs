@@ -1,7 +1,7 @@
 // Rust integration tests here
 
 use st_interpret;
-use st_interpret::prog_handle::{st_program_load, ProgContext, ProgHandle};
+use st_interpret::prog_handle::{st_program_load, ProgContext};
 use st_interpret::read_file;
 
 /// Test lalrpop functionality

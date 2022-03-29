@@ -3,7 +3,7 @@ use crate::ast::{Program, Statement, VariableKind, VariableValue};
 use crate::read_file;
 lalrpop_mod!(pub parser);
 
-use crate::ast::AssignmentStatement;
+//use crate::ast::AssignmentStatement;
 use crate::ast::AstNode;
 use crate::ast::Program::Prog;
 use std::collections::hash_map::Iter;
@@ -171,9 +171,9 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> ProgHandle {
 
 /// Run a ST file
 /// ProgramHandle prog_handle = st_program_load(“testprogram.st”, context);
-pub fn st_program_run(ProgramHandle: &mut ProgHandle) {
+pub fn st_program_run(program_handle: &mut ProgHandle) {
     loop {
-        let mut ret_val = st_program_step(ProgramHandle);
+        let ret_val = st_program_step(program_handle);
 
         if ret_val {
             break;
@@ -186,19 +186,19 @@ pub fn st_program_run(ProgramHandle: &mut ProgHandle) {
 // outputs: Boolean used for determining when program is complete. True means you
 //          have excecuted all statements in the list. can be expanded to use
 //          with error detection
-pub fn st_program_step(ProgramHandle: &mut ProgHandle) -> bool {
+pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
     //for debugging
     //println!("step: {count}", count = ProgramHandle.statement_counter);
 
     // get context
-    let context: &mut ProgContext = &mut ProgramHandle.context;
+    let context: &mut ProgContext = &mut program_handle.context;
 
     //get statement counter
-    let counter: u32 = ProgramHandle.statement_counter;
+    let counter: u32 = program_handle.statement_counter;
     let num_usize: usize = counter as usize;
 
     //get program node
-    let program = &ProgramHandle.ast;
+    let program = &program_handle.ast;
 
     //use to get access to Vec<Assignments> as statements
     let Prog(_, all_dec_lists, statements) = program;
@@ -227,7 +227,7 @@ pub fn st_program_step(ProgramHandle: &mut ProgHandle) -> bool {
     //check if program is complete
     if num_usize < statements.len() - 1 {
         //increment to the next statement
-        ProgramHandle.statement_counter += 1;
+        program_handle.statement_counter += 1;
     } else {
         return true;
     }

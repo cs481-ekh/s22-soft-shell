@@ -61,28 +61,28 @@ AssignmentStatement: AssignmentStatement = {
 
 // Start of expression branch
 Expression: Expression = {
-    <x:XOR_Expression> r"(?i)OR" <x2:XOR_Expression> => Expression::Expr(x, Some(x2)),
-    <x:XOR_Expression> => Expression::Expr(x, None),
+    <x:XorExpression> r"(?i)OR" <x2:XorExpression> => Expression::Expr(x, Some(x2)),
+    <x:XorExpression> => Expression::Expr(x, None),
 };
 
-XOR_Expression: XOR_Expression = {
-    <a:AND_Expression>  r"(?i)XOR" <a2:AND_Expression> => XOR_Expression::Xor(a, Some(a2)),
-    <a:AND_Expression> => XOR_Expression::Xor(a, None),
+XorExpression: XorExpression = {
+    <a:AndExpression>  r"(?i)XOR" <a2:AndExpression> => XorExpression::Xor(a, Some(a2)),
+    <a:AndExpression> => XorExpression::Xor(a, None),
 };
 
-AND_Expression: AND_Expression = {
-  <c:Comparison> r"&|(?i)AND" <c2:Comparison> => AND_Expression::And(c, Some(c2)),
-  <c:Comparison> => AND_Expression::And(c, None),
+AndExpression: AndExpression = {
+  <c:Comparison> r"&|(?i)AND" <c2:Comparison> => AndExpression::And(c, Some(c2)),
+  <c:Comparison> => AndExpression::And(c, None),
 };
 
 Comparison: Comparison = {
-    <e:EquExpression> "=" <e2:EquExpression> => Comparison::Comp_Eq(e, Some((true, e2))),
-    <e:EquExpression> "<>" <e2:EquExpression> => Comparison::Comp_Eq(e, Some((false, e2))),
-    <e:EquExpression> => Comparison::Comp_Eq(e, None),
+    <e:EquExpression> "=" <e2:EquExpression> => Comparison::CompEq(e, Some((true, e2))),
+    <e:EquExpression> "<>" <e2:EquExpression> => Comparison::CompEq(e, Some((false, e2))),
+    <e:EquExpression> => Comparison::CompEq(e, None),
 };
 
 EquExpression: EquExpression = {
-    <a:AddExpression> <c:ComparisionOperator> <a2:AddExpression> => EquExpression::Equ(a, Some((c, a2))),
+    <a:AddExpression> <c:ComparisonOperator> <a2:AddExpression> => EquExpression::Equ(a, Some((c, a2))),
     <a:AddExpression> => EquExpression::Equ(a, None),
 };
 
@@ -120,11 +120,11 @@ Constant: VariableValue = {
 };
 
 // Expression operators
-ComparisionOperator: ComparisonOperator = {
-    "<" => ComparisonOperator::LESS_THAN,
-    ">" => ComparisonOperator::GREATER_THAN,
-    "<=" => ComparisonOperator::LESS_EQUAL_THAN,
-    ">=" => ComparisonOperator::GREATER_EQUAL_THAN,
+ComparisonOperator: ComparisonOperator = {
+    "<" => ComparisonOperator::LessThan,
+    ">" => ComparisonOperator::GreaterThan,
+    "<=" => ComparisonOperator::LessEqualThan,
+    ">=" => ComparisonOperator::GreaterEqualThan,
 };
 
 AddOperator: AddOperator = {

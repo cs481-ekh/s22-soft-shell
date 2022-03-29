@@ -1,19 +1,18 @@
 //! AST node definitions
 
-use crate::ast::AND_Expression::And;
 use crate::ast::AddExpression::Add;
+use crate::ast::AndExpression::And;
 use crate::ast::AssignmentStatement::Asgn;
-use crate::ast::Comparison::Comp_Eq;
+use crate::ast::Comparison::CompEq;
 use crate::ast::ComparisonOperator::*;
 use crate::ast::EquExpression::Equ;
 use crate::ast::Expression::Expr;
 use crate::ast::PowerExpression::Power;
-use crate::ast::Program::Prog;
 use crate::ast::Term::Term as TermInstance;
 use crate::ast::UnaryExpression::Unary;
 use crate::ast::VariableValue::*;
 use crate::ast::VarsDec::DecList;
-use crate::ast::XOR_Expression::Xor;
+use crate::ast::XorExpression::Xor;
 use crate::prog_handle::ProgContext;
 use chrono::naive::{NaiveDate, NaiveTime};
 use num_traits::checked_pow;
@@ -44,7 +43,7 @@ pub enum VariableValue {
     TIME(Duration),
     LTIME(Duration),
     DATE(NaiveDate),
-    TIME_OF_DAY(NaiveTime),
+    TimeOfDay(NaiveTime),
 }
 
 // Start of expressions
@@ -54,7 +53,7 @@ pub enum VariableValue {
 /// Note that order of operations is captured in a leaf first resolution
 /// of the various child nodes.
 pub enum Expression {
-    Expr(XOR_Expression, Option<XOR_Expression>),
+    Expr(XorExpression, Option<XorExpression>),
 }
 
 impl AstNode for Expression {
@@ -73,11 +72,11 @@ impl AstNode for Expression {
 }
 
 #[derive(Debug, Clone)]
-pub enum XOR_Expression {
-    Xor(AND_Expression, Option<AND_Expression>),
+pub enum XorExpression {
+    Xor(AndExpression, Option<AndExpression>),
 }
 
-impl AstNode for XOR_Expression {
+impl AstNode for XorExpression {
     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Xor(left, right) = self;
         let right = match right {
@@ -93,11 +92,11 @@ impl AstNode for XOR_Expression {
 }
 
 #[derive(Debug, Clone)]
-pub enum AND_Expression {
+pub enum AndExpression {
     And(Comparison, Option<Comparison>),
 }
 
-impl AstNode for AND_Expression {
+impl AstNode for AndExpression {
     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let And(left, right) = self;
         let right = match right {
@@ -114,13 +113,13 @@ impl AstNode for AND_Expression {
 
 #[derive(Debug, Clone)]
 pub enum Comparison {
-    Comp_Eq(EquExpression, Option<(bool, EquExpression)>),
+    CompEq(EquExpression, Option<(bool, EquExpression)>),
 }
 
 impl AstNode for Comparison {
     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         // TODO: just performs an equals comparison right now, but this node should be able to represent both equals and not-equals comparison
-        let Comp_Eq(left, op_and_right) = self;
+        let CompEq(left, op_and_right) = self;
         let left = left.execute(context).unwrap();
         if let Some((is_equals, right)) = op_and_right {
             let right = right.execute(context).unwrap();
@@ -210,7 +209,7 @@ impl AstNode for PowerExpression {
         let result = match right {
             Some(right) => {
                 let right = right.execute(context).unwrap();
-                let exponent = match right {
+                let _exponent = match right {
                     INT(x) => x,
                     _ => panic!("Only integers supported as exponents"),
                 };
@@ -231,10 +230,10 @@ pub enum UnaryExpression {
 impl AstNode for UnaryExpression {
     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
         let Unary(expression, operator) = self;
-        let expressionValue = expression.execute(context).unwrap();
+        let expression_value = expression.execute(context).unwrap();
         let result = match operator {
             Some(op) => match op {
-                UnaryOperator::NEGATIVE => match expressionValue {
+                UnaryOperator::NEGATIVE => match expression_value {
                     INT(x) => INT(-x),
                     DINT(x) => DINT(-x),
                     REAL(x) => REAL(-x),
@@ -243,14 +242,14 @@ impl AstNode for UnaryExpression {
                         panic!("Attempted to negate a type that cannot be negated")
                     }
                 },
-                UnaryOperator::NOT => match expressionValue {
+                UnaryOperator::NOT => match expression_value {
                     BOOL(x) => BOOL(!x),
                     _ => {
                         panic!("Attempted to invert a non-boolean value")
                     }
                 },
             },
-            None => expressionValue,
+            None => expression_value,
         };
 
         Some(result)
@@ -284,10 +283,10 @@ impl AstNode for PrimaryExpression {
 #[derive(Debug, Clone)]
 /// Different comparison operators for resolving boolean expressions
 pub enum ComparisonOperator {
-    LESS_THAN,
-    GREATER_THAN,
-    LESS_EQUAL_THAN,
-    GREATER_EQUAL_THAN,
+    LessThan,
+    GreaterThan,
+    LessEqualThan,
+    GreaterEqualThan,
 }
 
 #[derive(Debug, Clone)]
@@ -318,7 +317,7 @@ pub enum VariableKind {
     NORMAL,
     INPUT,
     OUTPUT,
-    IN_OUT,
+    InOut,
     EXTERNAL,
     GLOBAL,
 }
@@ -533,7 +532,7 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (_, _) => panic!("Attempted to exponentiate incompatible types"),
         },
         MathOp::Comparison(comparison) => match comparison {
-            LESS_THAN => match (left, right) {
+            LessThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x < y),
                 (BYTE(x), BYTE(y)) => BOOL(x < y),
                 (WORD(x), WORD(y)) => BOOL(x < y),
@@ -546,7 +545,7 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (WCHAR(x), WCHAR(y)) => BOOL(x < y),
                 (_, _) => panic!("Attempted to add incompatible types"),
             },
-            GREATER_THAN => match (left, right) {
+            GreaterThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x > y),
                 (BYTE(x), BYTE(y)) => BOOL(x > y),
                 (WORD(x), WORD(y)) => BOOL(x > y),
@@ -559,7 +558,7 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (WCHAR(x), WCHAR(y)) => BOOL(x > y),
                 (_, _) => panic!("Attempted to add incompatible types"),
             },
-            LESS_EQUAL_THAN => match (left, right) {
+            LessEqualThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x <= y),
                 (BYTE(x), BYTE(y)) => BOOL(x <= y),
                 (WORD(x), WORD(y)) => BOOL(x <= y),
@@ -572,7 +571,7 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (WCHAR(x), WCHAR(y)) => BOOL(x <= y),
                 (_, _) => panic!("Attempted to add incompatible types"),
             },
-            GREATER_EQUAL_THAN => match (left, right) {
+            GreaterEqualThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x >= y),
                 (BYTE(x), BYTE(y)) => BOOL(x >= y),
                 (WORD(x), WORD(y)) => BOOL(x >= y),
