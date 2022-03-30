@@ -1,3 +1,22 @@
+Meeting 3/30/2022
+
+Scribe: Rob
+
+Present: All
+
+Absent: none
+
+Goals: Meeting with Go West
+
+- Partly through Sprint 3
+- Currently, Execute function up to subset 7 and the C API
+- Anna had a question about precision to Go West, Josh thinks that the approach we are taking is appropriate for the project. Possibly, have future work be to investigate the precision issue.
+- Josh from Go West had a question on expectations on what they should expect for what work will be completed and ones that we feel we won't be able to complete. As a team, we have not identified any and are still aiming to complete milestones that we have established
+- Also, mentioned that we are planning to do project handover documents in Sprint 4
+- Talked about the if implementation between Rob and Carson
+- Anna is almost done with their work for the Sprint looking for extra work
+- C API is scheduled to be completed by Friday April 1, 2022
+__________________________________________________________________________
 Meeting 3/18/2022
 
 Scribe: Rob
