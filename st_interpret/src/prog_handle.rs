@@ -1,5 +1,7 @@
 /// Program state and current execution information.
-use crate::ast::{Program, Statement, VariableKind, VariableValue};
+use crate::ast::{
+    IterationStatement, Program, Statement, VariableKind, VariableValue, WhileStatement,
+};
 use crate::read_file;
 lalrpop_mod!(pub parser);
 
@@ -152,7 +154,7 @@ impl ProgContext {
 #[derive(Debug)]
 /// Main struct for controlling program execution
 pub struct ProgHandle {
-    statement_counter: u32,
+    statement_counter: Vec<(usize, bool)>, // bool represents if that level's statement should be skipped when returning
     ast: Program,
     pub context: ProgContext,
 }
@@ -163,7 +165,7 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> ProgHandle {
         .parse(&read_file(filename))
         .unwrap();
     ProgHandle {
-        statement_counter: 0,
+        statement_counter: vec![(0, true)],
         ast: program_ast,
         context,
     }
@@ -193,9 +195,8 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
     // get context
     let context: &mut ProgContext = &mut program_handle.context;
 
-    //get statement counter
-    let counter: u32 = program_handle.statement_counter;
-    let num_usize: usize = counter as usize;
+    //get statement counter, first postion is top level statements, last position is deepest level
+    let counter_stack: &mut Vec<(usize, bool)> = &mut program_handle.statement_counter;
 
     //get program node
     let program = &program_handle.ast;
@@ -203,8 +204,14 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
     //use to get access to Vec<Assignments> as statements
     let Prog(_, all_dec_lists, statements) = program;
 
+    println!("{:?}", &counter_stack);
+    //check if program is complete, only have to check top level here
+    if counter_stack[0].0 == statements.len() {
+        return true;
+    }
+
     //if first step then excecute declarations list
-    if counter == 0 {
+    if counter_stack[0].0 == 0 && counter_stack.len() == 1 {
         if let Some(program_dec_lists) = all_dec_lists {
             for dec_list in program_dec_lists {
                 dec_list.execute(context);
@@ -212,24 +219,118 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
         }
     }
 
-    //TODO Change to accomodate if and while loops, shimmed for now assuming all statements are assignments
-    //execute current statement
-    let statement: Statement = statements[num_usize].clone();
+    //get the current statement
+    let mut statement_list = statements.clone();
+    let mut cur_level = 0;
+    let mut statement_num = counter_stack[cur_level].0;
+    let mut statement: Statement = statement_list[statement_num].clone();
 
+    while cur_level < counter_stack.len() {
+        match statement {
+            Statement::Asgn(_asgn) => {
+                // Do nothing as it must be done nesting
+                cur_level += 1; // must be iterated here
+            }
+            Statement::Iter(iter) => {
+                match iter {
+                    IterationStatement::While(w) => {
+                        // If while loop evaluation isn't the deepest level of program counter:
+                        // update statement_list so it's one level deeper
+
+                        if cur_level != counter_stack.len() - 1 {
+                            let WhileStatement::While(_w_expr, w_statment_list) = w;
+
+                            statement_list = w_statment_list.clone();
+                            cur_level += 1;
+
+                            // Copy statement
+                            statement_num = counter_stack[cur_level].0;
+                        } else {
+                            cur_level += 1;
+                        }
+                    }
+                }
+            }
+            Statement::Select(select) => {
+                // TODO
+            }
+        }
+
+        statement = statement_list[statement_num].clone(); // Satisfy rust's compiler
+    }
+    // statement is now the current statement to execute
+
+    //execute current statement
     match statement {
         Statement::Asgn(asgn) => {
             asgn.execute(context);
-        }
-        Statement::Iter(iter) => (),     //TODO Add me!
-        Statement::Select(select) => (), //TODO Add me!
-    }
 
-    //check if program is complete
-    if num_usize < statements.len() - 1 {
-        //increment to the next statement
-        program_handle.statement_counter += 1;
-    } else {
-        return true;
+            // If statement is last statement of loop, go up one level in counter stack
+            if statement_num == statement_list.len() - 1 {
+                if counter_stack.len() > 1 {
+                    // Isn't root level
+                    counter_stack.pop();
+
+                    // if skip over flag is true
+                    if counter_stack.last().unwrap().1 {
+                        (*counter_stack.last_mut().unwrap()).0 += 1; // Move to next statement
+                    }
+                    // just pop if false
+                } else {
+                    (*counter_stack.last_mut().unwrap()).0 += 1; // Move to next statement
+                }
+            } else {
+                (*counter_stack.last_mut().unwrap()).0 += 1; // Move to next statement
+            }
+        }
+        Statement::Iter(iter) => {
+            match iter {
+                IterationStatement::While(w) => {
+                    // if statement is while it's boolean needs to be evaluated
+                    // unpack while tuple into expression and statement_list
+                    let WhileStatement::While(w_expr, _w_statement_list) = w;
+
+                    let w_expr_result = w_expr.execute(context).unwrap();
+
+                    match w_expr_result {
+                        VariableValue::BOOL(b) => {
+                            if b {
+                                // set skip over flag to false as while needs to re-evaluated each loop
+                                counter_stack.last_mut().unwrap().1 = false;
+                                // Add new counter to counter stack to begin execution of codeblock on next step
+                                counter_stack.push((0, true));
+                            } else {
+                                // TODO: Consolidate duplicate code
+                                // If statement is last statement of loop, go up one level in counter stack
+                                if statement_num == statement_list.len() - 1 {
+                                    if counter_stack.len() > 1 {
+                                        // Isn't root level
+                                        counter_stack.pop();
+
+                                        // if skip over flag is true
+                                        if counter_stack.last().unwrap().1 {
+                                            (*counter_stack.last_mut().unwrap()).0 += 1;
+                                            // Move to next statement
+                                        }
+                                        // just pop if false
+                                    } else {
+                                        (*counter_stack.last_mut().unwrap()).0 += 1;
+                                        // Move to next statement
+                                    }
+                                } else {
+                                    (*counter_stack.last_mut().unwrap()).0 += 1;
+                                    // Move to next statement
+                                }
+                            }
+                        }
+                        _ => {
+                            panic!("While expression must resolve to boolean")
+                        }
+                    }
+                }
+            }
+        }
+        Statement::Select(select) => (), //TODO Add me!
     }
 
     false

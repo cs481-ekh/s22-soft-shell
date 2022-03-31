@@ -379,7 +379,7 @@ mod tests {
             let mut prog_handle = st_program_load(file_name, ProgContext::new());
             st_program_run(&mut prog_handle);
 
-            println!("Program handle dump: {:#?}", prog_handle);
+            println!("Program handle dump: {:?}", prog_handle);
             assert_eq!(
                 prog_handle
                     .context
