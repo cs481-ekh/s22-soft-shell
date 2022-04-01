@@ -1,3 +1,23 @@
+Meeting 4/1/2022
+
+Scribe: Rob
+
+Present: Natalie, Doug, Rob, Carson
+
+Absent: Anna
+
+Goals: Sprint 3 updates
+
+- Carson is wrapping up truncation today or Monday
+	- also, setting up the build file
+- Doug is working with Rob in implementing the if, else if, and else
+- Natalie is still working on the C API.
+- Rob is working with Doug in wrapping up the if, else if, and else
+	- waiting to start the test implmentation of the C API
+		- done some research on testing C API within Rust
+- Discussed planning for Sprint 4, the proposed meeting time is 8pm on Sunday April 3, 2022
+__________________________________________________________________________
+
 Meeting 3/30/2022
 
 Scribe: Rob
