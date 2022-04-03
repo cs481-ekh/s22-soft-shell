@@ -1,15 +1,17 @@
 //! MIT-licensed IEC 61131-3 Structured Text interpreter library.
 
-mod ast;
-mod capi;
-pub mod prog_handle;
-pub use ast::VariableValue;
+extern crate core;
+#[macro_use]
+extern crate lalrpop_util;
 
 use std::fs;
 
-#[macro_use]
-extern crate lalrpop_util;
-extern crate core;
+use crate::prog_handle::InterpreterResult;
+pub use ast::VariableValue;
+
+mod ast;
+mod capi;
+pub mod prog_handle;
 
 lalrpop_mod!(pub parser);
 
@@ -21,23 +23,28 @@ pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
 /// Check that the parser accepts a valid file
 pub fn parser_test() -> bool {
     parser::ProgramParser::new()
-        .parse(&read_file("tests/test_inputs/st_subset_1/01_Int.st"))
+        .parse(&read_file("tests/test_inputs/st_subset_1/01_Int.st").unwrap())
         .is_ok()
 }
 
 /// Read in the contents of a file to a String
-pub fn read_file(file_path: &str) -> String {
-    let contents = fs::read_to_string(file_path).expect("Unable to read file");
-    return contents;
+pub fn read_file(file_path: &str) -> InterpreterResult<String> {
+    let contents = fs::read_to_string(file_path);
+    if let Ok(contents) = contents {
+        InterpreterResult::Ok(contents)
+    } else {
+        InterpreterResult::Err(String::from("Unable to read file"))
+    }
 }
 
 /// Unit tests for interpreter
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use crate::ast::{VariableKind, VariableValue};
     use crate::prog_handle::{st_program_load, st_program_run, ProgContext, VariableInfo};
     use crate::{lib_function_example_add, parser, read_file};
-    use std::fs;
 
     #[test]
     /// Check parser succeeds over subset 1 ST programs.
@@ -114,8 +121,9 @@ mod tests {
         let mut prog_handle = st_program_load(
             "tests/test_inputs/st_subset_1/01_mixed.st",
             ProgContext::new(),
-        );
-        st_program_run(&mut prog_handle);
+        )
+        .unwrap();
+        st_program_run(&mut prog_handle).unwrap();
         assert_eq!(
             prog_handle
                 .context
@@ -160,7 +168,7 @@ mod tests {
     #[test]
     /// Test reading in the contents of a file.
     fn test_open_file() {
-        let result = read_file("tests/test_inputs/misc/read_test.txt");
+        let result = read_file("tests/test_inputs/misc/read_test.txt").unwrap();
         assert_eq!(result.is_empty(), false);
         assert_eq!(result, "Hello World!");
     }
@@ -169,11 +177,13 @@ mod tests {
     /// Test adding an int variable to a ProgContext
     fn test_add_var_int() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("variable"),
-            VariableKind::NORMAL,
-            VariableValue::INT(10),
-        );
+        prog_context
+            .add_var(
+                String::from("variable"),
+                VariableKind::NORMAL,
+                VariableValue::INT(10),
+            )
+            .unwrap();
         let result = prog_context.get_var(String::from("variable"));
         let value = match result {
             None => VariableValue::INT(0),
@@ -191,11 +201,13 @@ mod tests {
     /// Test adding a bool variable to a ProgContext
     fn test_add_var_bool() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("variable"),
-            VariableKind::NORMAL,
-            VariableValue::BOOL(false),
-        );
+        prog_context
+            .add_var(
+                String::from("variable"),
+                VariableKind::NORMAL,
+                VariableValue::BOOL(false),
+            )
+            .unwrap();
         let result = prog_context.get_var(String::from("variable"));
         let value = match result {
             None => VariableValue::BOOL(true),
@@ -213,11 +225,13 @@ mod tests {
     /// Test adding a real variable to a ProgContext
     fn test_add_var_real() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("variable"),
-            VariableKind::NORMAL,
-            VariableValue::REAL(1.5),
-        );
+        prog_context
+            .add_var(
+                String::from("variable"),
+                VariableKind::NORMAL,
+                VariableValue::REAL(1.5),
+            )
+            .unwrap();
         let result = prog_context.get_var(String::from("variable"));
         let value = match result {
             None => VariableValue::REAL(0.0),
@@ -235,21 +249,27 @@ mod tests {
     /// Test adding multiple variables to a ProgContext
     fn test_get_vars() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("variable0"),
-            VariableKind::NORMAL,
-            VariableValue::REAL(1.5),
-        );
-        prog_context.add_var(
-            String::from("variable1"),
-            VariableKind::NORMAL,
-            VariableValue::BOOL(false),
-        );
-        prog_context.add_var(
-            String::from("variable2"),
-            VariableKind::NORMAL,
-            VariableValue::INT(10),
-        );
+        prog_context
+            .add_var(
+                String::from("variable0"),
+                VariableKind::NORMAL,
+                VariableValue::REAL(1.5),
+            )
+            .unwrap();
+        prog_context
+            .add_var(
+                String::from("variable1"),
+                VariableKind::NORMAL,
+                VariableValue::BOOL(false),
+            )
+            .unwrap();
+        prog_context
+            .add_var(
+                String::from("variable2"),
+                VariableKind::NORMAL,
+                VariableValue::INT(10),
+            )
+            .unwrap();
         let v0 = VariableInfo {
             var_value: VariableValue::REAL(1.5),
             var_kind: VariableKind::NORMAL,
@@ -287,13 +307,17 @@ mod tests {
     /// Test updating a variable works
     fn update_var() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("myvar"),
-            VariableKind::NORMAL,
-            VariableValue::INT(4),
-        );
+        prog_context
+            .add_var(
+                String::from("myvar"),
+                VariableKind::NORMAL,
+                VariableValue::INT(4),
+            )
+            .unwrap();
 
-        prog_context.update_var("myvar", VariableValue::INT(5));
+        prog_context
+            .update_var("myvar", VariableValue::INT(5))
+            .unwrap();
 
         let result = prog_context.get_var(String::from("myvar"));
         let value = match result {
@@ -309,40 +333,49 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Cannot change the type of a variable")]
     fn update_change_type_fails() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("myvar"),
-            VariableKind::NORMAL,
-            VariableValue::INT(4),
-        );
+        prog_context
+            .add_var(
+                String::from("myvar"),
+                VariableKind::NORMAL,
+                VariableValue::INT(4),
+            )
+            .unwrap();
 
-        prog_context.update_var("myvar", VariableValue::REAL(5.0));
+        assert!(prog_context
+            .update_var("myvar", VariableValue::REAL(5.0))
+            .unwrap_err()
+            .contains("Cannot change the type of a variable"));
     }
 
     #[test]
     fn run_program() {
         let context = ProgContext::new();
-        let mut ret_val = st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context);
-        st_program_run(&mut ret_val);
+        let mut prog_handle =
+            st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context).unwrap();
+        st_program_run(&mut prog_handle).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "A variable already exists with this name")]
     fn add_second_variable_same_name_fails() {
         let mut prog_context = ProgContext::new();
-        prog_context.add_var(
-            String::from("myvar"),
-            VariableKind::NORMAL,
-            VariableValue::INT(4),
-        );
+        prog_context
+            .add_var(
+                String::from("myvar"),
+                VariableKind::NORMAL,
+                VariableValue::INT(4),
+            )
+            .unwrap();
 
-        prog_context.add_var(
-            String::from("MyVAR"),
-            VariableKind::NORMAL,
-            VariableValue::INT(4),
-        );
+        assert!(prog_context
+            .add_var(
+                String::from("MyVAR"),
+                VariableKind::NORMAL,
+                VariableValue::INT(4),
+            )
+            .unwrap_err()
+            .contains("A variable already exists with this name"));
     }
 
     /// Tests parser on all st files within a specified folder
@@ -355,7 +388,7 @@ mod tests {
 
             println!("Name: {}", path_name);
 
-            let file = read_file(path_name);
+            let file = read_file(path_name).unwrap();
             let parse_result = parser::ProgramParser::new().parse(&file);
 
             println!("{:?}\n", parse_result);
@@ -376,8 +409,8 @@ mod tests {
             let file_name = path.to_str().unwrap();
             println!("Executing file {}", file_name);
 
-            let mut prog_handle = st_program_load(file_name, ProgContext::new());
-            st_program_run(&mut prog_handle);
+            let mut prog_handle = st_program_load(file_name, ProgContext::new()).unwrap();
+            st_program_run(&mut prog_handle).unwrap();
 
             println!("Program handle dump: {:?}", prog_handle);
             assert_eq!(

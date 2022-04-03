@@ -1,5 +1,11 @@
 //! AST node definitions
 
+use std::collections::HashMap;
+use std::time::Duration;
+
+use chrono::naive::{NaiveDate, NaiveTime};
+use num_traits::checked_pow;
+
 use crate::ast::AddExpression::Add;
 use crate::ast::AndExpression::And;
 use crate::ast::AssignmentStatement::Asgn;
@@ -13,16 +19,13 @@ use crate::ast::UnaryExpression::Unary;
 use crate::ast::VariableValue::*;
 use crate::ast::VarsDec::DecList;
 use crate::ast::XorExpression::Xor;
+use crate::prog_handle::InterpreterResult;
 use crate::prog_handle::ProgContext;
-use chrono::naive::{NaiveDate, NaiveTime};
-use num_traits::checked_pow;
-use std::collections::HashMap;
-use std::time::Duration;
 
 /// Trait containing functionality for executable AST nodes
 pub trait AstNode {
     /// Execute this node in the given context
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue>;
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>>;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -57,17 +60,17 @@ pub enum Expression {
 }
 
 impl AstNode for Expression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Expr(left, right) = self;
         let right = match right {
-            Some(expr) => Some(expr.execute(context).unwrap()),
+            Some(expr) => Some(expr.execute(context)?.unwrap()),
             None => None,
         };
-        Some(boolean_operation_result(
-            left.execute(context).unwrap(),
+        InterpreterResult::Ok(Some(boolean_operation_result(
+            left.execute(context)?.unwrap(),
             BoolOp::OR,
             right,
-        ))
+        )?))
     }
 }
 
@@ -77,17 +80,17 @@ pub enum XorExpression {
 }
 
 impl AstNode for XorExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Xor(left, right) = self;
         let right = match right {
-            Some(expr) => Some(expr.execute(context).unwrap()),
+            Some(expr) => Some(expr.execute(context)?.unwrap()),
             None => None,
         };
-        Some(boolean_operation_result(
-            left.execute(context).unwrap(),
+        InterpreterResult::Ok(Some(boolean_operation_result(
+            left.execute(context)?.unwrap(),
             BoolOp::XOR,
             right,
-        ))
+        )?))
     }
 }
 
@@ -97,17 +100,17 @@ pub enum AndExpression {
 }
 
 impl AstNode for AndExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let And(left, right) = self;
         let right = match right {
-            Some(expr) => Some(expr.execute(context).unwrap()),
+            Some(expr) => Some(expr.execute(context)?.unwrap()),
             None => None,
         };
-        Some(boolean_operation_result(
-            left.execute(context).unwrap(),
+        InterpreterResult::Ok(Some(boolean_operation_result(
+            left.execute(context)?.unwrap(),
             BoolOp::AND,
             right,
-        ))
+        )?))
     }
 }
 
@@ -117,21 +120,21 @@ pub enum Comparison {
 }
 
 impl AstNode for Comparison {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         // TODO: just performs an equals comparison right now, but this node should be able to represent both equals and not-equals comparison
         let CompEq(left, op_and_right) = self;
-        let left = left.execute(context).unwrap();
-        if let Some((is_equals, right)) = op_and_right {
-            let right = right.execute(context).unwrap();
+        let left = left.execute(context)?.unwrap();
+        InterpreterResult::Ok(Some(if let Some((is_equals, right)) = op_and_right {
+            let right = right.execute(context)?.unwrap();
             let result = if *is_equals {
                 left == right
             } else {
                 left != right
             };
-            Some(BOOL(result))
+            BOOL(result)
         } else {
-            Some(left)
-        }
+            left
+        }))
     }
 }
 
@@ -141,19 +144,15 @@ pub enum EquExpression {
 }
 
 impl AstNode for EquExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Equ(left, op_and_right) = self;
-        let left = left.execute(context).unwrap();
-        if let Some((op, right)) = op_and_right {
-            let right = right.execute(context).unwrap();
-            Some(math_operation_result(
-                left,
-                MathOp::Comparison(op.clone()),
-                right,
-            ))
+        let left = left.execute(context)?.unwrap();
+        InterpreterResult::Ok(Some(if let Some((op, right)) = op_and_right {
+            let right = right.execute(context)?.unwrap();
+            math_operation_result(left, MathOp::Comparison(op.clone()), right)?
         } else {
-            Some(left)
-        }
+            left
+        }))
     }
 }
 
@@ -163,15 +162,15 @@ pub enum AddExpression {
 }
 
 impl AstNode for AddExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Add(left, op_and_right) = self;
-        let left = left.execute(context).unwrap();
-        if let Some((op, right)) = op_and_right {
-            let right = right.execute(context).unwrap();
-            Some(math_operation_result(left, MathOp::Add(op.clone()), right))
+        let left = left.execute(context)?.unwrap();
+        InterpreterResult::Ok(Some(if let Some((op, right)) = op_and_right {
+            let right = right.execute(context)?.unwrap();
+            math_operation_result(left, MathOp::Add(op.clone()), right)?
         } else {
-            Some(left)
-        }
+            left
+        }))
     }
 }
 
@@ -181,19 +180,15 @@ pub enum Term {
 }
 
 impl AstNode for Term {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let TermInstance(left, op_and_right) = self;
-        let left = left.execute(context).unwrap();
-        if let Some((op, right)) = op_and_right {
-            let right = right.execute(context).unwrap();
-            Some(math_operation_result(
-                left,
-                MathOp::Multiply(op.clone()),
-                right,
-            ))
+        let left = left.execute(context)?.unwrap();
+        InterpreterResult::Ok(Some(if let Some((op, right)) = op_and_right {
+            let right = right.execute(context)?.unwrap();
+            math_operation_result(left, MathOp::Multiply(op.clone()), right)?
         } else {
-            Some(left)
-        }
+            left
+        }))
     }
 }
 
@@ -203,22 +198,26 @@ pub enum PowerExpression {
 }
 
 impl AstNode for PowerExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Power(left, right) = self;
-        let left = left.execute(context).unwrap();
+        let left = left.execute(context)?.unwrap();
         let result = match right {
             Some(right) => {
-                let right = right.execute(context).unwrap();
+                let right = right.execute(context)?.unwrap();
                 let _exponent = match right {
                     INT(x) => x,
-                    _ => panic!("Only integers supported as exponents"),
+                    _ => {
+                        return InterpreterResult::Err(String::from(
+                            "Only integers supported as exponents",
+                        ));
+                    }
                 };
-                math_operation_result(left, MathOp::Exponentiate, right)
+                math_operation_result(left, MathOp::Exponentiate, right)?
             }
             None => left,
         };
 
-        Some(result)
+        InterpreterResult::Ok(Some(result))
     }
 }
 
@@ -228,9 +227,9 @@ pub enum UnaryExpression {
 }
 
 impl AstNode for UnaryExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Unary(expression, operator) = self;
-        let expression_value = expression.execute(context).unwrap();
+        let expression_value = expression.execute(context)?.unwrap();
         let result = match operator {
             Some(op) => match op {
                 UnaryOperator::NEGATIVE => match expression_value {
@@ -239,20 +238,24 @@ impl AstNode for UnaryExpression {
                     REAL(x) => REAL(-x),
                     LREAL(x) => LREAL(-x),
                     _ => {
-                        panic!("Attempted to negate a type that cannot be negated")
+                        return InterpreterResult::Err(String::from(
+                            "Attempted to negate a type that cannot be negated",
+                        ));
                     }
                 },
                 UnaryOperator::NOT => match expression_value {
                     BOOL(x) => BOOL(!x),
                     _ => {
-                        panic!("Attempted to invert a non-boolean value")
+                        return InterpreterResult::Err(String::from(
+                            "Attempted to invert a non-boolean value",
+                        ));
                     }
                 },
             },
             None => expression_value,
         };
 
-        Some(result)
+        InterpreterResult::Ok(Some(result))
     }
 }
 
@@ -264,18 +267,18 @@ pub enum PrimaryExpression {
 }
 
 impl AstNode for PrimaryExpression {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
-        match self {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
+        InterpreterResult::Ok(match self {
             PrimaryExpression::Const(value) => Some(value.clone()),
             PrimaryExpression::VarName(var_name) => Some(
                 context
                     .get_var(*(*var_name).clone())
-                    .unwrap()
+                    .ok_or(format!("Could not find referenced variable '{}'", var_name))?
                     .var_value
                     .clone(),
             ),
-            PrimaryExpression::Expr(expression) => Some(expression.execute(context).unwrap()),
-        }
+            PrimaryExpression::Expr(expression) => Some(expression.execute(context)?.unwrap()),
+        })
     }
 }
 
@@ -330,25 +333,27 @@ pub enum VarsDec {
 }
 
 impl AstNode for VarsDec {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let DecList(kind, decs) = self;
         for var_dec in decs.iter() {
             let var_name = (**var_dec.0).clone();
             let var_type = &*var_dec.1;
 
-            context.add_var(var_name, kind.clone(), var_type.clone());
+            context.add_var(var_name, kind.clone(), var_type.clone())?;
         }
 
-        None
+        InterpreterResult::Ok(None)
     }
 }
 
 /// Representation of a generic statement
 #[derive(Debug, Clone)]
 pub enum Statement {
-    Asgn(AssignmentStatement),  // Assignment
-    Select(SelectionStatement), // If statement
-    Iter(IterationStatement),   // While loop
+    Asgn(AssignmentStatement),
+    // Assignment
+    Select(SelectionStatement),
+    // If statement
+    Iter(IterationStatement), // While loop
 }
 
 /// A selection statement
@@ -390,14 +395,14 @@ pub enum AssignmentStatement {
 }
 
 impl AstNode for AssignmentStatement {
-    fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Asgn(var_name, new_value) = self;
         let var_name = *var_name.clone();
 
-        let new_value = new_value.execute(context).unwrap();
-        context.update_var(&var_name, new_value);
+        let new_value = new_value.execute(context)?.unwrap();
+        context.update_var(&var_name, new_value)?;
 
-        None
+        InterpreterResult::Ok(None)
     }
 }
 
@@ -410,7 +415,7 @@ pub enum Program {
 
 // TODO: Fix, broken due to changes introduced in subset 6 and 7
 // impl AstNode for Program {
-//     fn execute(&self, context: &mut ProgContext) -> Option<VariableValue> {
+//     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
 //         let Prog(_, all_dec_lists, statements) = self;
 //
 //         // process variable declarations lists if present
@@ -447,11 +452,15 @@ fn boolean_operation_result(
     left: VariableValue,
     op: BoolOp,
     right: Option<VariableValue>,
-) -> VariableValue {
-    if let Some(right) = right {
+) -> InterpreterResult<VariableValue> {
+    InterpreterResult::Ok(if let Some(right) = right {
         let (left, right) = match (left, right) {
             (BOOL(left), BOOL(right)) => (left, right),
-            (_, _) => panic!("Attempted boolean operation with non-boolean values"),
+            (_, _) => {
+                return InterpreterResult::Err(String::from(
+                    "Attempted boolean operation with non-boolean values",
+                ));
+            }
         };
         BOOL(match op {
             BoolOp::XOR => left ^ right,
@@ -460,11 +469,15 @@ fn boolean_operation_result(
         })
     } else {
         left
-    }
+    })
 }
 
-fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) -> VariableValue {
-    match op {
+fn math_operation_result(
+    left: VariableValue,
+    op: MathOp,
+    right: VariableValue,
+) -> InterpreterResult<VariableValue> {
+    InterpreterResult::Ok(match op {
         MathOp::Multiply(MultiplyOperator::MULTIPLY) => match (left, right) {
             (INT(x), INT(y)) => INT(x * y),
             (BYTE(x), BYTE(y)) => BYTE(x * y),
@@ -476,7 +489,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (LREAL(x), LREAL(y)) => LREAL(x * y),
             (CHAR(x), CHAR(y)) => CHAR(x * y),
             (WCHAR(x), WCHAR(y)) => WCHAR(x * y),
-            (_, _) => panic!("Attempted to multiply incompatible types"),
+            (_, _) => {
+                return InterpreterResult::Err(String::from(
+                    "Attempted to multiply incompatible types",
+                ));
+            }
         },
         MathOp::Multiply(MultiplyOperator::DIVIDE) => match (left, right) {
             (INT(x), INT(y)) => INT(x / y),
@@ -489,7 +506,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (LREAL(x), LREAL(y)) => LREAL(x / y),
             (CHAR(x), CHAR(y)) => CHAR(x / y),
             (WCHAR(x), WCHAR(y)) => WCHAR(x / y),
-            (_, _) => panic!("Attempted to divide incompatible types"),
+            (_, _) => {
+                return InterpreterResult::Err(String::from(
+                    "Attempted to divide incompatible types",
+                ));
+            }
         },
         MathOp::Multiply(MultiplyOperator::MODULO) => match (left, right) {
             (INT(x), INT(y)) => INT(x % y),
@@ -506,7 +527,9 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (LREAL(x), LREAL(y)) => LREAL(x + y),
             (CHAR(x), CHAR(y)) => CHAR(x + y),
             (WCHAR(x), WCHAR(y)) => WCHAR(x + y),
-            (_, _) => panic!("Attempted to add incompatible types"),
+            (_, _) => {
+                return InterpreterResult::Err(String::from("Attempted to add incompatible types"));
+            }
         },
         MathOp::Add(AddOperator::SUBTRACT) => match (left, right) {
             (INT(x), INT(y)) => INT(x - y),
@@ -519,7 +542,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (LREAL(x), LREAL(y)) => LREAL(x - y),
             (CHAR(x), CHAR(y)) => CHAR(x - y),
             (WCHAR(x), WCHAR(y)) => WCHAR(x - y),
-            (_, _) => panic!("Attempted to subtract incompatible types"),
+            (_, _) => {
+                return InterpreterResult::Err(String::from(
+                    "Attempted to subtract incompatible types",
+                ));
+            }
         },
         MathOp::Exponentiate => match (left, right) {
             (INT(x), INT(y)) => INT(checked_pow(x, y as usize).unwrap()),
@@ -529,7 +556,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
             (DWORD(x), DWORD(y)) => DWORD(checked_pow(x, y as usize).unwrap()),
             (CHAR(x), CHAR(y)) => CHAR(checked_pow(x, y as usize).unwrap()),
             (WCHAR(x), WCHAR(y)) => WCHAR(checked_pow(x, y as usize).unwrap()),
-            (_, _) => panic!("Attempted to exponentiate incompatible types"),
+            (_, _) => {
+                return InterpreterResult::Err(String::from(
+                    "Attempted to exponentiate incompatible types",
+                ));
+            }
         },
         MathOp::Comparison(comparison) => match comparison {
             LessThan => match (left, right) {
@@ -543,7 +574,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (LREAL(x), LREAL(y)) => BOOL(x < y),
                 (CHAR(x), CHAR(y)) => BOOL(x < y),
                 (WCHAR(x), WCHAR(y)) => BOOL(x < y),
-                (_, _) => panic!("Attempted to add incompatible types"),
+                (_, _) => {
+                    return InterpreterResult::Err(String::from(
+                        "Attempted to compare incompatible types",
+                    ));
+                }
             },
             GreaterThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x > y),
@@ -556,7 +591,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (LREAL(x), LREAL(y)) => BOOL(x > y),
                 (CHAR(x), CHAR(y)) => BOOL(x > y),
                 (WCHAR(x), WCHAR(y)) => BOOL(x > y),
-                (_, _) => panic!("Attempted to add incompatible types"),
+                (_, _) => {
+                    return InterpreterResult::Err(String::from(
+                        "Attempted to compare incompatible types",
+                    ));
+                }
             },
             LessEqualThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x <= y),
@@ -569,7 +608,11 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (LREAL(x), LREAL(y)) => BOOL(x <= y),
                 (CHAR(x), CHAR(y)) => BOOL(x <= y),
                 (WCHAR(x), WCHAR(y)) => BOOL(x <= y),
-                (_, _) => panic!("Attempted to add incompatible types"),
+                (_, _) => {
+                    return InterpreterResult::Err(String::from(
+                        "Attempted to compare incompatible types",
+                    ));
+                }
             },
             GreaterEqualThan => match (left, right) {
                 (INT(x), INT(y)) => BOOL(x >= y),
@@ -582,8 +625,12 @@ fn math_operation_result(left: VariableValue, op: MathOp, right: VariableValue) 
                 (LREAL(x), LREAL(y)) => BOOL(x >= y),
                 (CHAR(x), CHAR(y)) => BOOL(x >= y),
                 (WCHAR(x), WCHAR(y)) => BOOL(x >= y),
-                (_, _) => panic!("Attempted to add incompatible types"),
+                (_, _) => {
+                    return InterpreterResult::Err(String::from(
+                        "Attempted to compare incompatible types",
+                    ));
+                }
             },
         },
-    }
+    })
 }

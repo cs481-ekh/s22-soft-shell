@@ -13,7 +13,7 @@ fn example_parser() {
 #[test]
 /// Test the ability to read in a file
 fn test_open_file() {
-    let a = read_file("tests/test_inputs/st_subset_1/01_Bool.st");
+    let a = read_file("tests/test_inputs/st_subset_1/01_Bool.st").unwrap();
     assert_eq!(a.is_empty(), false);
 }
 
@@ -23,14 +23,15 @@ fn test_load_program() {
     st_program_load(
         "tests/test_inputs/st_subset_1/01_Bool.st",
         ProgContext::new(),
-    );
+    )
+    .unwrap();
 }
 
 #[test]
-#[should_panic(expected = "UnrecognizedToken")]
+#[should_panic(expected = "Unrecognized token `Hello`")]
 /// Test that loading an invalid program fails
 fn test_load_invalid_program() {
-    st_program_load("tests/test_inputs/misc/read_test.txt", ProgContext::new());
+    st_program_load("tests/test_inputs/misc/read_test.txt", ProgContext::new()).unwrap();
 }
 
 #[test]

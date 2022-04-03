@@ -1,15 +1,16 @@
+use std::collections::hash_map::Iter;
+use std::collections::HashMap;
+
 /// Program state and current execution information.
 use crate::ast::{
     IterationStatement, Program, Statement, VariableKind, VariableValue, WhileStatement,
 };
-use crate::read_file;
-lalrpop_mod!(pub parser);
-
 //use crate::ast::AssignmentStatement;
 use crate::ast::AstNode;
 use crate::ast::Program::Prog;
-use std::collections::hash_map::Iter;
-use std::collections::HashMap;
+use crate::read_file;
+
+lalrpop_mod!(pub parser);
 
 #[derive(Debug, PartialEq, Clone)]
 /// All information stored about a variable.
@@ -37,10 +38,14 @@ impl ProgContext {
     }
 
     /// Adds a variable to the symbol table with the associated value
-    pub fn add_var(&mut self, name: String, kind: VariableKind, value: VariableValue) {
+    pub fn add_var(
+        &mut self,
+        name: String,
+        kind: VariableKind,
+        value: VariableValue,
+    ) -> InterpreterResult<()> {
         if let Some(f) = &mut self.function_context {
-            f.add_var(name, kind, value);
-            return;
+            return f.add_var(name, kind, value);
         }
         let var_info = VariableInfo {
             var_value: value,
@@ -51,32 +56,33 @@ impl ProgContext {
 
         // disallow naming more than one variable by the same name
         if self.symbols.contains_key(var) {
-            panic!("A variable already exists with this name");
+            return Err(String::from("A variable already exists with this name"));
         }
 
         self.symbols.insert(name.to_ascii_lowercase(), var_info);
+        InterpreterResult::Ok(())
     }
 
     /// Update a variable's value in the symbol table if possible
-    pub fn update_var(&mut self, name: &str, new_value: VariableValue) {
+    pub fn update_var(&mut self, name: &str, new_value: VariableValue) -> InterpreterResult<()> {
         let name = name.to_ascii_lowercase();
         if let Some(f) = &mut self.function_context {
-            f.update_var(&name, new_value);
-            return;
+            f.update_var(&name, new_value)?;
+            return InterpreterResult::Ok(());
         }
         // retrieve current value
-        let current_var_info = self.symbols.remove(&name).expect(&format!(
+        let current_var_info = self.symbols.remove(&name).ok_or(format!(
             "Attempted to update a variable '{}' that does not exist",
             name
-        ));
+        ))?;
 
         // disallow updating to a different ST variable type
         if std::mem::discriminant(&current_var_info.var_value) != std::mem::discriminant(&new_value)
         {
-            panic!(
+            return InterpreterResult::Err(format!(
                 "Cannot change the type of a variable (previous '{:?}', new '{:?})",
                 current_var_info.var_value, &new_value
-            );
+            ));
         }
 
         let new_var_info = VariableInfo {
@@ -84,6 +90,7 @@ impl ProgContext {
             ..current_var_info
         };
         self.symbols.insert(name, new_var_info);
+        InterpreterResult::Ok(())
     }
 
     /// Gets a variable from the symbol table with the given name
@@ -154,33 +161,38 @@ impl ProgContext {
 #[derive(Debug)]
 /// Main struct for controlling program execution
 pub struct ProgHandle {
-    statement_counter: Vec<(usize, bool)>, // bool represents if that level's statement should be skipped when returning
+    statement_counter: Vec<(usize, bool)>,
+    // bool represents if that level's statement should be skipped when returning
     ast: Program,
     pub context: ProgContext,
 }
 
 /// Load in an ST file and set up a handle to execute it
-pub fn st_program_load(filename: &str, context: ProgContext) -> ProgHandle {
-    let program_ast = parser::ProgramParser::new()
-        .parse(&read_file(filename))
-        .unwrap();
-    ProgHandle {
-        statement_counter: vec![(0, true)],
-        ast: program_ast,
-        context,
+pub fn st_program_load(filename: &str, context: ProgContext) -> InterpreterResult<ProgHandle> {
+    let file_contents = &read_file(filename)?;
+    let parsed_program_ast = parser::ProgramParser::new().parse(file_contents);
+    match parsed_program_ast {
+        Ok(program_ast) => InterpreterResult::Ok(ProgHandle {
+            statement_counter: vec![(0, true)],
+            ast: program_ast,
+            context,
+        }),
+        Err(parse_error) => InterpreterResult::Err(format!("parse error: {}", parse_error)),
     }
 }
 
 /// Run a ST file
 /// ProgramHandle prog_handle = st_program_load(“testprogram.st”, context);
-pub fn st_program_run(program_handle: &mut ProgHandle) {
+pub fn st_program_run(program_handle: &mut ProgHandle) -> InterpreterResult<()> {
     loop {
-        let ret_val = st_program_step(program_handle);
+        let ret_val = st_program_step(program_handle)?;
 
         if ret_val {
             break;
         }
     }
+
+    InterpreterResult::Ok(())
 }
 
 // function steps through one state from list stored in ast
@@ -188,7 +200,7 @@ pub fn st_program_run(program_handle: &mut ProgHandle) {
 // outputs: Boolean used for determining when program is complete. True means you
 //          have excecuted all statements in the list. can be expanded to use
 //          with error detection
-pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
+pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<bool> {
     //for debugging
     //println!("step: {count}", count = ProgramHandle.statement_counter);
 
@@ -207,14 +219,14 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
     println!("{:?}", &counter_stack);
     //check if program is complete, only have to check top level here
     if counter_stack[0].0 == statements.len() {
-        return true;
+        return InterpreterResult::Ok(true);
     }
 
     //if first step then excecute declarations list
     if counter_stack[0].0 == 0 && counter_stack.len() == 1 {
         if let Some(program_dec_lists) = all_dec_lists {
             for dec_list in program_dec_lists {
-                dec_list.execute(context);
+                dec_list.execute(context)?;
             }
         }
     }
@@ -263,7 +275,7 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
     //execute current statement
     match statement {
         Statement::Asgn(asgn) => {
-            asgn.execute(context);
+            asgn.execute(context)?;
 
             // If statement is last statement of loop, go up one level in counter stack
             if statement_num == statement_list.len() - 1 {
@@ -290,7 +302,7 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
                     // unpack while tuple into expression and statement_list
                     let WhileStatement::While(w_expr, _w_statement_list) = w;
 
-                    let w_expr_result = w_expr.execute(context).unwrap();
+                    let w_expr_result = w_expr.execute(context)?.unwrap();
 
                     match w_expr_result {
                         VariableValue::BOOL(b) => {
@@ -324,7 +336,9 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
                             }
                         }
                         _ => {
-                            panic!("While expression must resolve to boolean")
+                            return InterpreterResult::Err(String::from(
+                                "While expression must resolve to boolean",
+                            ));
                         }
                     }
                 }
@@ -333,5 +347,9 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> bool {
         Statement::Select(select) => (), //TODO Add me!
     }
 
-    false
+    InterpreterResult::Ok(false)
 }
+
+pub type InterpreterResult<T> = std::result::Result<T, String>;
+
+// struct InterpreterError(String);
