@@ -1,3 +1,42 @@
+
+Meeting 4/3/2022
+
+Scribe: Doug/Rob
+
+Present: Natalie, Doug, Rob, Carson, Anna
+
+Goals: Sprint 4 planning
+
+- Set up new rolls for sprint 4
+	- Scrum Master: Carson
+	- Product Owner: Anna
+	- Scribe: Douglas
+	
+- On track for finishing Sprint 3
+- areas left on sprint 3
+	-  Step function for IF
+	-  C AST
+
+- for sprint 4 will need to complete tasks 19-21 from project plan
+
+- expand functionality to incoperate subset 8 and 9 which is essentially Function handling and varaible types that go with it.
+ 
+- discussed how to go about file lookup for ST function files. Decided that parsing of the main program should return a list of function names, then each function would get parsed and stored in teh data structured. Not nested in the AST of the main program.
+
+- Set up new sprint with goals, user stories, tasks
+
+- Anna closing tasks for execute function in If and While since step function will now be covering functionality.
+
+- Each member will create a task to document their respective sections of the code
+
+- User guide will include everything you need for being a user of the library
+
+- Plan to create a developer guide to go along with the user guide for the engineers that pick up this project next
+	- Each perosn on the team will write there about their respective section of the code in the developer guide
+	- Make a task for sprint 4 referencing user story #149 before adding your Section ot the developer guide  
+- Assignment of tasks will wait until Wednesday Morning
+__________________________________________________________________________
+
 Meeting 4/1/2022
 
 Scribe: Rob
