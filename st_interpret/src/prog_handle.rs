@@ -76,17 +76,31 @@ impl ProgContext {
             name
         ))?;
 
+        let mut up_new_value = new_value;
+
         // disallow updating to a different ST variable type
-        if std::mem::discriminant(&current_var_info.var_value) != std::mem::discriminant(&new_value)
+        if std::mem::discriminant(&current_var_info.var_value)
+            != std::mem::discriminant(&up_new_value)
         {
-            return InterpreterResult::Err(format!(
-                "Cannot change the type of a variable (previous '{:?}', new '{:?})",
-                current_var_info.var_value, &new_value
-            ));
+            // implicit cast from int to real
+            if matches!(current_var_info.var_value, VariableValue::INT(_)) {
+                if let VariableValue::LREAL(val) = up_new_value {
+                    up_new_value = VariableValue::INT(val.trunc() as i16);
+                }
+            } else if matches!(current_var_info.var_value, VariableValue::LREAL(_)) {
+                if let VariableValue::INT(val) = up_new_value {
+                    up_new_value = VariableValue::LREAL(val as f64);
+                }
+            } else {
+                return InterpreterResult::Err(format!(
+                    "Cannot change the type of a variable (previous '{:?}', new '{:?})",
+                    current_var_info.var_value, &up_new_value
+                ));
+            }
         }
 
         let new_var_info = VariableInfo {
-            var_value: new_value,
+            var_value: up_new_value.clone(),
             ..current_var_info
         };
         self.symbols.insert(name, new_var_info);

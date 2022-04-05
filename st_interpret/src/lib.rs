@@ -339,7 +339,7 @@ mod tests {
             .add_var(
                 String::from("myvar"),
                 VariableKind::NORMAL,
-                VariableValue::INT(4),
+                VariableValue::BOOL(true),
             )
             .unwrap();
 
@@ -347,6 +347,41 @@ mod tests {
             .update_var("myvar", VariableValue::REAL(5.0))
             .unwrap_err()
             .contains("Cannot change the type of a variable"));
+    }
+
+    #[test]
+    fn update_change_type_truncate() {
+        let mut prog_context = ProgContext::new();
+        prog_context
+            .add_var(
+                String::from("myvar"),
+                VariableKind::NORMAL,
+                VariableValue::INT(1),
+            )
+            .unwrap();
+
+        let _result = prog_context.update_var("myvar", VariableValue::LREAL(3.9));
+        assert!(
+            prog_context.get_var("myvar".to_string()).unwrap().var_value == VariableValue::INT(3)
+        );
+    }
+
+    #[test]
+    fn update_change_type_int_real() {
+        let mut prog_context = ProgContext::new();
+        prog_context
+            .add_var(
+                String::from("myvar"),
+                VariableKind::NORMAL,
+                VariableValue::LREAL(1.3),
+            )
+            .unwrap();
+
+        let _result = prog_context.update_var("myvar", VariableValue::INT(5));
+        assert!(
+            prog_context.get_var("myvar".to_string()).unwrap().var_value
+                == VariableValue::LREAL(5.0)
+        );
     }
 
     #[test]
