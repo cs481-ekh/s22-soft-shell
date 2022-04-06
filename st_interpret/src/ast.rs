@@ -4,7 +4,10 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 use chrono::naive::{NaiveDate, NaiveTime};
-use num_traits::checked_pow;
+use num::{
+    checked_pow, rational::Ratio, BigRational, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub,
+    FromPrimitive, Integer, Signed, ToPrimitive,
+};
 
 use crate::ast::AddExpression::Add;
 use crate::ast::AndExpression::And;
@@ -121,7 +124,6 @@ pub enum Comparison {
 
 impl AstNode for Comparison {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
-        // TODO: just performs an equals comparison right now, but this node should be able to represent both equals and not-equals comparison
         let CompEq(left, op_and_right) = self;
         let left = left.execute(context)?.unwrap();
         InterpreterResult::Ok(Some(if let Some((is_equals, right)) = op_and_right {
@@ -149,7 +151,7 @@ impl AstNode for EquExpression {
         let left = left.execute(context)?.unwrap();
         InterpreterResult::Ok(Some(if let Some((op, right)) = op_and_right {
             let right = right.execute(context)?.unwrap();
-            math_operation_result(left, MathOp::Comparison(op.clone()), right)?
+            comparison_operation_result(left, op, right)?
         } else {
             left
         }))
@@ -204,14 +206,6 @@ impl AstNode for PowerExpression {
         let result = match right {
             Some(right) => {
                 let right = right.execute(context)?.unwrap();
-                let _exponent = match right {
-                    INT(x) => x,
-                    _ => {
-                        return InterpreterResult::Err(String::from(
-                            "Only integers supported as exponents",
-                        ));
-                    }
-                };
                 math_operation_result(left, MathOp::Exponentiate, right)?
             }
             None => left,
@@ -439,7 +433,6 @@ pub enum MathOp {
     Multiply(MultiplyOperator),
     Add(AddOperator),
     Exponentiate,
-    Comparison(ComparisonOperator),
 }
 
 pub enum BoolOp {
@@ -472,165 +465,89 @@ fn boolean_operation_result(
     })
 }
 
+fn get_num_from_variable(variable: VariableValue) -> InterpreterResult<BigRational> {
+    InterpreterResult::Ok(
+        match variable {
+            INT(x) => Ratio::from_i16(x),
+            BYTE(x) => Ratio::from_u8(x),
+            WORD(x) => Ratio::from_u16(x),
+            UINT(x) => Ratio::from_u16(x),
+            DWORD(x) => Ratio::from_u32(x),
+            DINT(x) => Ratio::from_i32(x),
+            REAL(x) => Ratio::from_f32(x),
+            LREAL(x) => Ratio::from_f64(x),
+            CHAR(x) => Ratio::from_u8(x),
+            WCHAR(x) => Ratio::from_u16(x),
+            _ => {
+                return InterpreterResult::Err(String::from(
+                    "Attempted to get number from a non-numeric type",
+                ));
+            }
+        }
+        .ok_or(String::from(
+            "Could not convert number to rational representation",
+        ))?,
+    )
+}
+
+fn comparison_operation_result(
+    left: VariableValue,
+    op: &ComparisonOperator,
+    right: VariableValue,
+) -> InterpreterResult<VariableValue> {
+    let left = get_num_from_variable(left)?;
+    let right = get_num_from_variable(right)?;
+    let comparison_result = match op {
+        LessThan => left < right,
+        LessEqualThan => left <= right,
+        GreaterThan => left > right,
+        GreaterEqualThan => left >= right,
+    };
+    InterpreterResult::Ok(VariableValue::BOOL(comparison_result))
+}
+
 fn math_operation_result(
     left: VariableValue,
     op: MathOp,
     right: VariableValue,
 ) -> InterpreterResult<VariableValue> {
-    InterpreterResult::Ok(match op {
-        MathOp::Multiply(MultiplyOperator::MULTIPLY) => match (left, right) {
-            (INT(x), INT(y)) => INT(x * y),
-            (BYTE(x), BYTE(y)) => BYTE(x * y),
-            (WORD(x), WORD(y)) => WORD(x * y),
-            (UINT(x), UINT(y)) => UINT(x * y),
-            (DWORD(x), DWORD(y)) => DWORD(x * y),
-            (DINT(x), DINT(y)) => DINT(x * y),
-            (REAL(x), REAL(y)) => REAL(x * y),
-            (LREAL(x), LREAL(y)) => LREAL(x * y),
-            (CHAR(x), CHAR(y)) => CHAR(x * y),
-            (WCHAR(x), WCHAR(y)) => WCHAR(x * y),
-            (_, _) => {
-                return InterpreterResult::Err(String::from(
-                    "Attempted to multiply incompatible types",
-                ));
+    let left = get_num_from_variable(left)?;
+    let right = get_num_from_variable(right)?;
+    let math_result = match op {
+        MathOp::Multiply(MultiplyOperator::MULTIPLY) => left.checked_mul(&right),
+        MathOp::Multiply(MultiplyOperator::DIVIDE) => left.checked_div(&right),
+        MathOp::Multiply(MultiplyOperator::MODULO) => {
+            if left.is_integer() && right.is_integer() {
+                Some(Ratio::from_integer(
+                    left.to_integer().mod_floor(&right.to_integer()),
+                ))
+            } else {
+                panic!("Attempted to take modulus of non-integral types");
             }
-        },
-        MathOp::Multiply(MultiplyOperator::DIVIDE) => match (left, right) {
-            (INT(x), INT(y)) => INT(x / y),
-            (BYTE(x), BYTE(y)) => BYTE(x / y),
-            (WORD(x), WORD(y)) => WORD(x / y),
-            (UINT(x), UINT(y)) => UINT(x / y),
-            (DWORD(x), DWORD(y)) => DWORD(x / y),
-            (DINT(x), DINT(y)) => DINT(x / y),
-            (REAL(x), REAL(y)) => REAL(x / y),
-            (LREAL(x), LREAL(y)) => LREAL(x / y),
-            (CHAR(x), CHAR(y)) => CHAR(x / y),
-            (WCHAR(x), WCHAR(y)) => WCHAR(x / y),
-            (_, _) => {
-                return InterpreterResult::Err(String::from(
-                    "Attempted to divide incompatible types",
-                ));
-            }
-        },
-        MathOp::Multiply(MultiplyOperator::MODULO) => match (left, right) {
-            (INT(x), INT(y)) => INT(x % y),
-            (_, _) => panic!("Attempted to take mod of incompatible types"),
-        },
-        MathOp::Add(AddOperator::ADD) => match (left, right) {
-            (INT(x), INT(y)) => INT(x + y),
-            (BYTE(x), BYTE(y)) => BYTE(x + y),
-            (WORD(x), WORD(y)) => WORD(x + y),
-            (UINT(x), UINT(y)) => UINT(x + y),
-            (DWORD(x), DWORD(y)) => DWORD(x + y),
-            (DINT(x), DINT(y)) => DINT(x + y),
-            (REAL(x), REAL(y)) => REAL(x + y),
-            (LREAL(x), LREAL(y)) => LREAL(x + y),
-            (CHAR(x), CHAR(y)) => CHAR(x + y),
-            (WCHAR(x), WCHAR(y)) => WCHAR(x + y),
-            (_, _) => {
-                return InterpreterResult::Err(String::from("Attempted to add incompatible types"));
-            }
-        },
-        MathOp::Add(AddOperator::SUBTRACT) => match (left, right) {
-            (INT(x), INT(y)) => INT(x - y),
-            (BYTE(x), BYTE(y)) => BYTE(x - y),
-            (WORD(x), WORD(y)) => WORD(x - y),
-            (UINT(x), UINT(y)) => UINT(x - y),
-            (DWORD(x), DWORD(y)) => DWORD(x - y),
-            (DINT(x), DINT(y)) => DINT(x - y),
-            (REAL(x), REAL(y)) => REAL(x - y),
-            (LREAL(x), LREAL(y)) => LREAL(x - y),
-            (CHAR(x), CHAR(y)) => CHAR(x - y),
-            (WCHAR(x), WCHAR(y)) => WCHAR(x - y),
-            (_, _) => {
-                return InterpreterResult::Err(String::from(
-                    "Attempted to subtract incompatible types",
-                ));
-            }
-        },
-        MathOp::Exponentiate => match (left, right) {
-            (INT(x), INT(y)) => INT(checked_pow(x, y as usize).unwrap()),
-            (BYTE(x), BYTE(y)) => BYTE(checked_pow(x, y as usize).unwrap()),
-            (WORD(x), WORD(y)) => WORD(checked_pow(x, y as usize).unwrap()),
-            (UINT(x), UINT(y)) => UINT(checked_pow(x, y as usize).unwrap()),
-            (DWORD(x), DWORD(y)) => DWORD(checked_pow(x, y as usize).unwrap()),
-            (CHAR(x), CHAR(y)) => CHAR(checked_pow(x, y as usize).unwrap()),
-            (WCHAR(x), WCHAR(y)) => WCHAR(checked_pow(x, y as usize).unwrap()),
-            (_, _) => {
-                return InterpreterResult::Err(String::from(
-                    "Attempted to exponentiate incompatible types",
-                ));
-            }
-        },
-        MathOp::Comparison(comparison) => match comparison {
-            LessThan => match (left, right) {
-                (INT(x), INT(y)) => BOOL(x < y),
-                (BYTE(x), BYTE(y)) => BOOL(x < y),
-                (WORD(x), WORD(y)) => BOOL(x < y),
-                (UINT(x), UINT(y)) => BOOL(x < y),
-                (DWORD(x), DWORD(y)) => BOOL(x < y),
-                (DINT(x), DINT(y)) => BOOL(x < y),
-                (REAL(x), REAL(y)) => BOOL(x < y),
-                (LREAL(x), LREAL(y)) => BOOL(x < y),
-                (CHAR(x), CHAR(y)) => BOOL(x < y),
-                (WCHAR(x), WCHAR(y)) => BOOL(x < y),
-                (_, _) => {
-                    return InterpreterResult::Err(String::from(
-                        "Attempted to compare incompatible types",
-                    ));
-                }
-            },
-            GreaterThan => match (left, right) {
-                (INT(x), INT(y)) => BOOL(x > y),
-                (BYTE(x), BYTE(y)) => BOOL(x > y),
-                (WORD(x), WORD(y)) => BOOL(x > y),
-                (UINT(x), UINT(y)) => BOOL(x > y),
-                (DWORD(x), DWORD(y)) => BOOL(x > y),
-                (DINT(x), DINT(y)) => BOOL(x > y),
-                (REAL(x), REAL(y)) => BOOL(x > y),
-                (LREAL(x), LREAL(y)) => BOOL(x > y),
-                (CHAR(x), CHAR(y)) => BOOL(x > y),
-                (WCHAR(x), WCHAR(y)) => BOOL(x > y),
-                (_, _) => {
-                    return InterpreterResult::Err(String::from(
-                        "Attempted to compare incompatible types",
-                    ));
-                }
-            },
-            LessEqualThan => match (left, right) {
-                (INT(x), INT(y)) => BOOL(x <= y),
-                (BYTE(x), BYTE(y)) => BOOL(x <= y),
-                (WORD(x), WORD(y)) => BOOL(x <= y),
-                (UINT(x), UINT(y)) => BOOL(x <= y),
-                (DWORD(x), DWORD(y)) => BOOL(x <= y),
-                (DINT(x), DINT(y)) => BOOL(x <= y),
-                (REAL(x), REAL(y)) => BOOL(x <= y),
-                (LREAL(x), LREAL(y)) => BOOL(x <= y),
-                (CHAR(x), CHAR(y)) => BOOL(x <= y),
-                (WCHAR(x), WCHAR(y)) => BOOL(x <= y),
-                (_, _) => {
-                    return InterpreterResult::Err(String::from(
-                        "Attempted to compare incompatible types",
-                    ));
-                }
-            },
-            GreaterEqualThan => match (left, right) {
-                (INT(x), INT(y)) => BOOL(x >= y),
-                (BYTE(x), BYTE(y)) => BOOL(x >= y),
-                (WORD(x), WORD(y)) => BOOL(x >= y),
-                (UINT(x), UINT(y)) => BOOL(x >= y),
-                (DWORD(x), DWORD(y)) => BOOL(x >= y),
-                (DINT(x), DINT(y)) => BOOL(x >= y),
-                (REAL(x), REAL(y)) => BOOL(x >= y),
-                (LREAL(x), LREAL(y)) => BOOL(x >= y),
-                (CHAR(x), CHAR(y)) => BOOL(x >= y),
-                (WCHAR(x), WCHAR(y)) => BOOL(x >= y),
-                (_, _) => {
-                    return InterpreterResult::Err(String::from(
-                        "Attempted to compare incompatible types",
-                    ));
-                }
-            },
-        },
-    })
+        }
+        MathOp::Add(AddOperator::ADD) => left.checked_add(&right),
+        MathOp::Add(AddOperator::SUBTRACT) => left.checked_sub(&right),
+        MathOp::Exponentiate => {
+            assert!(
+                right.is_integer(),
+                "Cannot exponentiate to non-integral powers"
+            );
+            let exponent = right.to_integer();
+            let left = if exponent.is_positive() {
+                left
+            } else {
+                left.recip()
+            };
+            let exponent = exponent
+                .abs()
+                .to_usize()
+                .expect("Could not convert exponent to usize");
+            checked_pow(left, exponent)
+        }
+    }
+    .expect("Math result under/overflowed");
+    let result = math_result
+        .to_f64()
+        .expect("Could not represent math result in internal format");
+    InterpreterResult::Ok(VariableValue::LREAL(result))
 }
