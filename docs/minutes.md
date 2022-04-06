@@ -1,9 +1,43 @@
+Meeting 4/6/2022
+
+Scribe: Doug
+
+Present: Natalie, Doug, Rob, Carson, Anna
+
+Absent: none
+
+Goals: Sprint 3 retrospective and Sprint 4 assignments
+
+- Went over remaining tasks of sprint 3
+	- Completed step with the exception of nesting, pushing to sprint 4 to finish nesting
+	- C API, Ened up being much more complicated than original estimates, more time needed to be allocated. Will attempt to finish today but may push to sprint 4 in needed.
+	-  C API testing task pushed to sprint 4.
+
+- Retrospective
+	- Anna: Lot of work down this print, more work towards end of sprint which creted a lod of code needing to be merged together and the end. It is ok to have some tasks roll over to the nest sprint, just document what you did for Dr. Henderson. Sprint 4 will be work heavy.
+	-  Rob: Time management got thrown off some with Spring break in middle of Sprint
+	-  Natalie: Also thrown off with spring break, C API was more complicated and fixng one issue often caused other issues, so taking a lot of unexpected time to complet.
+	- Doug: Pair programming went really well this sprint, worked heavily with rob on developing the step functionality for While and IF statements.
+
+- Sprint 4 Assignments
+	- Most tasks already assigned, assigned all remaining
+	- added tasks:
+		- github pages
+		- create ST test programs for functions
+		- added function calling functionality
+	- discussed what the differences would be between the documentation for user guide, developer guide, readme, and github Pages. Rust document generation should make task much easier as long as we have the code itself well documented through out  
+	- discussed whether poster should be included at a sprint task, will decide at a later date	 
+
+
+__________________________________________________________________________
 
 Meeting 4/3/2022
 
 Scribe: Doug/Rob
 
 Present: Natalie, Doug, Rob, Carson, Anna
+
+Absent: none
 
 Goals: Sprint 4 planning
 
