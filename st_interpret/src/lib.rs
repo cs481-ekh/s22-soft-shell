@@ -84,9 +84,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     /// Check subset 1 programs execute correctly
-    /// TODO: re-enable after implementing type coercion in assignments
     fn execute_subset_1() {
         interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_1");
     }
@@ -360,7 +358,7 @@ mod tests {
             )
             .unwrap();
 
-        let _result = prog_context.update_var("myvar", VariableValue::LREAL(3.9));
+        let _result = prog_context.update_var("myvar", VariableValue::REAL(3.9));
         assert!(
             prog_context.get_var("myvar".to_string()).unwrap().var_value == VariableValue::INT(3)
         );
@@ -373,14 +371,14 @@ mod tests {
             .add_var(
                 String::from("myvar"),
                 VariableKind::NORMAL,
-                VariableValue::LREAL(1.3),
+                VariableValue::REAL(1.3),
             )
             .unwrap();
 
         let _result = prog_context.update_var("myvar", VariableValue::INT(5));
         assert!(
             prog_context.get_var("myvar".to_string()).unwrap().var_value
-                == VariableValue::LREAL(5.0)
+                == VariableValue::REAL(5.0)
         );
     }
 

@@ -83,13 +83,38 @@ impl ProgContext {
             != std::mem::discriminant(&up_new_value)
         {
             // implicit cast from int to real
-            if matches!(current_var_info.var_value, VariableValue::INT(_)) {
-                if let VariableValue::LREAL(val) = up_new_value {
+            if matches!(current_var_info.var_value, VariableValue::INT(_))
+                && matches!(up_new_value, VariableValue::REAL(_))
+            {
+                if let VariableValue::REAL(val) = up_new_value {
                     up_new_value = VariableValue::INT(val.trunc() as i16);
                 }
-            } else if matches!(current_var_info.var_value, VariableValue::LREAL(_)) {
+            } else if matches!(current_var_info.var_value, VariableValue::REAL(_))
+                && matches!(up_new_value, VariableValue::INT(_))
+            {
                 if let VariableValue::INT(val) = up_new_value {
-                    up_new_value = VariableValue::LREAL(val as f64);
+                    up_new_value = VariableValue::REAL(val as f32);
+                }
+            } else if matches!(current_var_info.var_value, VariableValue::BOOL(_))
+                && matches!(up_new_value, VariableValue::INT(_))
+            {
+                if let VariableValue::INT(val) = up_new_value {
+                    if val == 1 {
+                        up_new_value = VariableValue::BOOL(true);
+                    } else if val == 0 {
+                        up_new_value = VariableValue::BOOL(false);
+                    } else {
+                        return InterpreterResult::Err(format!(
+                            "Cannot change the type of a variable (previous '{:?}', new '{:?})",
+                            current_var_info.var_value, &up_new_value
+                        ));
+                    }
+                }
+            } else if matches!(current_var_info.var_value, VariableValue::INT(_))
+                && matches!(up_new_value, VariableValue::BOOL(_))
+            {
+                if let VariableValue::BOOL(val) = up_new_value {
+                    up_new_value = VariableValue::INT(val as i16);
                 }
             } else {
                 return InterpreterResult::Err(format!(

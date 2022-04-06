@@ -547,7 +547,7 @@ fn math_operation_result(
     }
     .expect("Math result under/overflowed");
     let result = math_result
-        .to_f64()
+        .to_f32()
         .expect("Could not represent math result in internal format");
-    InterpreterResult::Ok(VariableValue::LREAL(result))
+    InterpreterResult::Ok(VariableValue::REAL(result))
 }
