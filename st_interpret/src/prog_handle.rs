@@ -3,7 +3,8 @@ use std::collections::HashMap;
 
 /// Program state and current execution information.
 use crate::ast::{
-    IterationStatement, Program, Statement, VariableKind, VariableValue, WhileStatement,
+    IfStatement, IterationStatement, Program, SelectionStatement, Statement, VariableKind,
+    VariableValue, WhileStatement,
 };
 //use crate::ast::AssignmentStatement;
 use crate::ast::AstNode;
@@ -204,6 +205,7 @@ pub struct ProgHandle {
     // bool represents if that level's statement should be skipped when returning
     ast: Program,
     pub context: ProgContext,
+    global_index: usize,
 }
 
 /// Load in an ST file and set up a handle to execute it
@@ -215,6 +217,7 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> InterpreterResul
             statement_counter: vec![(0, true)],
             ast: program_ast,
             context,
+            global_index: 0,
         }),
         Err(parse_error) => InterpreterResult::Err(format!("parse error: {}", parse_error)),
     }
@@ -248,6 +251,7 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
 
     //get statement counter, first postion is top level statements, last position is deepest level
     let counter_stack: &mut Vec<(usize, bool)> = &mut program_handle.statement_counter;
+    let mut global_index: usize = program_handle.global_index;
 
     //get program node
     let program = &program_handle.ast;
@@ -275,6 +279,7 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
     let mut cur_level = 0;
     let mut statement_num = counter_stack[cur_level].0;
     let mut statement: Statement = statement_list[statement_num].clone();
+    // let mut global_index = 0;
 
     while cur_level < counter_stack.len() {
         match statement {
@@ -303,7 +308,41 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
                 }
             }
             Statement::Select(select) => {
-                // TODO
+                match select {
+                    SelectionStatement::If(i) => {
+                        // If "if" loop evaluation isn't the deepest level of program counter:
+                        // update statement_list so it's one level deeper
+
+                        if cur_level != counter_stack.len() - 1 {
+                            let IfStatement::If(i_vec, _i_sec_statement_list) = i;
+                            let check = _i_sec_statement_list;
+                            match check {
+                                None => {
+                                    if i_vec.len() == global_index {
+                                        cur_level += 1;
+                                    } else {
+                                        statement_list = i_vec[global_index].1.clone();
+                                        cur_level += 1;
+                                    }
+                                }
+                                Some(x) => {
+                                    if i_vec.len() == global_index {
+                                        statement_list = x.clone();
+                                        cur_level += 1;
+                                    } else {
+                                        statement_list = i_vec[global_index].1.clone();
+                                        cur_level += 1;
+                                    }
+                                }
+                            }
+
+                            // Copy statement
+                            statement_num = counter_stack[cur_level].0;
+                        } else {
+                            cur_level += 1;
+                        }
+                    }
+                }
             }
         }
 
@@ -353,6 +392,10 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
                             } else {
                                 // TODO: Consolidate duplicate code
                                 // If statement is last statement of loop, go up one level in counter stack
+
+                                // Resets the recheck condition. Without this Whiles with if statements fail.
+                                counter_stack.last_mut().unwrap().1 = true;
+
                                 if statement_num == statement_list.len() - 1 {
                                     if counter_stack.len() > 1 {
                                         // Isn't root level
@@ -383,9 +426,100 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
                 }
             }
         }
-        Statement::Select(select) => (), //TODO Add me!
-    }
+        Statement::Select(select) => {
+            match select {
+                SelectionStatement::If(i) => {
+                    // if statement is while it's boolean needs to be evaluated
+                    // unpack while tuple into expression and statement_list
+                    let IfStatement::If(i_vec, _i_sec_statement_list) = i;
+                    global_index = 0;
 
+                    // check to see if this is the first usage of this if
+                    if counter_stack.last_mut().unwrap().1 == true {
+                        while i_vec.len() != global_index {
+                            let i_expr_result = i_vec[global_index].0.execute(context)?.unwrap();
+
+                            match i_expr_result {
+                                VariableValue::BOOL(b) => {
+                                    if b {
+                                        // Don't need to re-evaluate each loop for an if
+                                        // set skip over flag to false as while needs to re-evaluated each loop
+                                        counter_stack.last_mut().unwrap().1 = false;
+                                        // Add new counter to counter stack to begin execution of codeblock on next step
+                                        counter_stack.push((0, true));
+                                        break;
+                                    } else {
+                                        //i_vec.remove(0);
+                                        global_index = global_index + 1;
+                                        continue;
+                                        // might have an issue not pushing to the counter stack when we have an else
+                                    }
+                                }
+                                _ => {
+                                    panic!("If expression must resolve to boolean")
+                                }
+                            }
+                        }
+                        program_handle.global_index = global_index;
+                        // checking the else condition
+                        let check = _i_sec_statement_list;
+                        match check {
+                            None => {
+                                if i_vec.len() == global_index {
+                                    if statement_num == statement_list.len() - 1 {
+                                        if counter_stack.len() > 1 {
+                                            // Isn't root level
+                                            counter_stack.pop();
+
+                                            // if skip over flag is true
+                                            if counter_stack.last().unwrap().1 {
+                                                (*counter_stack.last_mut().unwrap()).0 += 1;
+                                                // Move to next statement
+                                            }
+                                            // just pop if false
+                                        } else {
+                                            (*counter_stack.last_mut().unwrap()).0 += 1;
+                                            // Move to next statement
+                                        }
+                                    } else {
+                                        (*counter_stack.last_mut().unwrap()).0 += 1;
+                                        // Move to next statement
+                                    }
+                                }
+                            }
+                            Some(_x) => {
+                                if i_vec.len() == global_index {
+                                    counter_stack.push((0, true));
+                                }
+                            }
+                        }
+                    } else {
+                        // move on to the next level
+                        counter_stack.last_mut().unwrap().1 = true;
+                        if statement_num == statement_list.len() - 1 {
+                            if counter_stack.len() > 1 {
+                                // Isn't root level
+                                counter_stack.pop();
+
+                                // if skip over flag is true
+                                if counter_stack.last().unwrap().1 {
+                                    (*counter_stack.last_mut().unwrap()).0 += 1;
+                                    // Move to next statement
+                                }
+                                // just pop if false
+                            } else {
+                                (*counter_stack.last_mut().unwrap()).0 += 1;
+                                // Move to next statement
+                            }
+                        } else {
+                            (*counter_stack.last_mut().unwrap()).0 += 1;
+                            // Move to next statement
+                        }
+                    }
+                }
+            }
+        }
+    }
     InterpreterResult::Ok(false)
 }
 
