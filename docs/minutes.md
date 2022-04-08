@@ -1,3 +1,26 @@
+Meeting 4/8/2022
+
+Scribe: Doug
+
+Present: Natalie, Doug, Carson, Anna
+
+Absent: Rob(unplanned Absent)//20 minute late, but extremely quick meeting.
+
+Goals: Sprint 4 Status
+
+- Will Talk about Poster design and Github pages during next meeting(Friday 4/15)
+
+- Discussed how function file names will be made available from parser. Carson will have parser create a list of program names to have availble at top level.
+
+-  Status
+	- Carson: Working on Parsing for subset 8 and 9 today, should unblock current developement.
+	- Anna: Should be able to get AST and function load once unblocked.
+	- Doug: Should have the first ST test file for function and function call up by the end of the day. Rob and Doug were able to track down an error in a different part of the code that was preventing them from getting the nesting step execution working properly and got that pushed to the repo
+	- Natalie: Focusing on storing function, C API can wait since it wont really block much	
+	- Rob: Finished Step function for IF and Nesting. (After meeting update)
+
+__________________________________________________________________________
+
 Meeting 4/6/2022
 
 Scribe: Doug
