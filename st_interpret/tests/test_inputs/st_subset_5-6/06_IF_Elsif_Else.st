@@ -10,7 +10,7 @@ PROGRAM 07_IF_Elsif_Else
         c := 0;
         IF a < 5 THEN
             a :=  5; //correct result
-        ELSIF a < 4 THEN
+        ELSEIF a < 4 THEN
             a := 4;
         ELSE
             a := 3;
@@ -18,7 +18,7 @@ PROGRAM 07_IF_Elsif_Else
 
         IF b > 5 THEN
             b :=  5;
-        ELSIF b < 4 THEN
+        ELSEIF b < 4 THEN
             b := 4; //correct result
         ELSE
             b := 3;
@@ -26,7 +26,7 @@ PROGRAM 07_IF_Elsif_Else
 
         IF c > 5 THEN
             c :=  5; 
-        ELSIF c > 4 THEN
+        ELSEIF c > 4 THEN
             c := 4; 
         ELSE
             c := 3; //correct result
