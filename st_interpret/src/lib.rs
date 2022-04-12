@@ -4,6 +4,7 @@ extern crate core;
 #[macro_use]
 extern crate lalrpop_util;
 
+use std::collections::HashSet;
 use std::fs;
 
 use crate::prog_handle::InterpreterResult;
@@ -23,7 +24,10 @@ pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
 /// Check that the parser accepts a valid file
 pub fn parser_test() -> bool {
     parser::ProgramParser::new()
-        .parse(&read_file("tests/test_inputs/st_subset_1/01_Int.st").unwrap())
+        .parse(
+            &mut HashSet::new(),
+            &read_file("tests/test_inputs/st_subset_1/01_Int.st").unwrap(),
+        )
         .is_ok()
 }
 
@@ -40,6 +44,7 @@ pub fn read_file(file_path: &str) -> InterpreterResult<String> {
 /// Unit tests for interpreter
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
     use std::fs;
 
     use crate::ast::{VariableKind, VariableValue};
@@ -68,6 +73,19 @@ mod tests {
     /// Check parser succeeds over subset 7 ST programs.
     fn subset7_parse() {
         parser_batch_test_st_folder("tests/test_inputs/st_subset_7");
+    }
+
+    #[test]
+    /// Check parser succeeds over subset 8 and 9 ST programs.
+    fn subset8_9_parse() {
+        parser_batch_test_st_folder("tests/test_inputs/st_subset_8-9");
+    }
+
+    #[test]
+    /// Check parser succeeds over subset 9 ST functions
+    fn subset9_func_parse() {
+        parser_test_st_function("tests/test_inputs/st_subset_9_funcs/SimpleAddFunction.st");
+        parser_test_st_function("tests/test_inputs/st_subset_9_funcs/ValueAverageFunction.st");
     }
 
     #[test]
@@ -422,7 +440,7 @@ mod tests {
             println!("Name: {}", path_name);
 
             let file = read_file(path_name).unwrap();
-            let parse_result = parser::ProgramParser::new().parse(&file);
+            let parse_result = parser::ProgramParser::new().parse(&mut HashSet::new(), &file);
 
             println!("{:?}\n", parse_result);
             assert!(parse_result.is_ok());
@@ -455,5 +473,15 @@ mod tests {
                 VariableValue::BOOL(true)
             );
         }
+    }
+
+    fn parser_test_st_function(file_path: &str) {
+        println!("Name: {}", file_path);
+
+        let file = read_file(file_path).unwrap();
+        let parse_result = parser::FunctionParser::new().parse(&mut HashSet::new(), &file);
+
+        println!("{:?}\n", parse_result);
+        assert!(parse_result.is_ok());
     }
 }

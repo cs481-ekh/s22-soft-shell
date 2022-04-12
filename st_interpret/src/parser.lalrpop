@@ -2,15 +2,26 @@ use std::str::FromStr;
 use std::boxed::Box;
 use std::vec::Vec;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use crate::ast::*;
 
-grammar;
+grammar(function_name_list: &mut HashSet<String>);
 
-// start of Progam
+// start of Program
 pub Program: Program = {
-    <pl:ProgramLabel> <v:VarList> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, Some(v), s),
-    <pl:ProgramLabel> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, None, s)
+
+    <pl:ProgramLabel> <v:VarList> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, Some(v), s, function_name_list.clone()),
+    <pl:ProgramLabel> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, None, s, function_name_list.clone())
 };
+
+// Function specific
+pub Function: Function = {
+    <fl:FunctionLabel> ":" <rt:VariableValue> <v:VarList> <mut s:StatementList> r"(?i)END_FUNCTION" => {let ret = s.last().unwrap().clone(); s.pop(); Function::Func(fl, rt,  Some(v), s, ret, function_name_list.clone())},
+    <fl:FunctionLabel> ":" <rt:VariableValue> <mut s:StatementList> r"(?i)END_FUNCTION" => {let ret = s.last().unwrap().clone(); s.pop(); Function::Func(fl, rt, None, s, ret, function_name_list.clone())},
+};
+
+// End function Specific
+
 
 // Start of StatementList branch
 StatementList: Vec<Statement> = {
@@ -110,6 +121,17 @@ PrimaryExpression: PrimaryExpression = {
     <c:Constant> => PrimaryExpression::Const(<>),
     <v:VariableLabel> => PrimaryExpression::VarName(<>),
     "(" <e:Expression> ")" => PrimaryExpression::Expr(Box::new(<>)),
+    <fl:VariableLabel> "(" <fil:FunctionInputList> ")" => {function_name_list.insert((*fl.clone().to_lowercase()).to_string()); PrimaryExpression::Func(<>)},
+};
+
+FunctionInputList: Vec<FunctionInput> = {
+    <fi:FunctionInput> => {let mut v = Vec::new(); v.push(<>); v},
+    <fi:FunctionInput> "," <mut fil:FunctionInputList> => {fil.insert(0, fi); fil},
+};
+
+FunctionInput: FunctionInput = {
+    <vl:VariableLabel> ":=" <e:Expression> => FunctionInput::Input(Some(vl), e),
+    <e:Expression> => FunctionInput::Input(None, e),
 };
 
 // TODO: add all types, this stores a litteral value, reusing variabletype enum
@@ -164,9 +186,13 @@ DeclarationList: Box<HashMap<Box<String>, VariableValue>> = {
 //TODO: Add rest of varaible kinds
 VariableKind: VariableKind = {
     r"(?i)VAR" => VariableKind::NORMAL,
+    r"(?i)VAR_INPUT" => VariableKind::INPUT,
+    r"(?i)VAR_OUTPUT" => VariableKind::OUTPUT,
+    r"(?i)VAR_IN_OUT" => VariableKind::InOut,
+    r"(?i)VAR_EXTERNAL" => VariableKind::EXTERNAL,
+    r"(?i)VAR_GLOBAL" => VariableKind::GLOBAL,
 };
 
-//TODO: check if types are case sensitive
 //TODO: add all var types
 //TODO: Check if types have default value or not, change enum if they are unintallized, default values provided are hack
 VariableValue: VariableValue = {
@@ -178,6 +204,7 @@ VariableValue: VariableValue = {
 
 VariableLabel: Box<String> = <s:VAR_NAME> => Box::new(s.to_string());
 ProgramLabel: Box<String> = <s:PROG_NAME> => Box::new(s.to_string());
+FunctionLabel: Box<String> = <s:FUNC_NAME> => Box::new(s.to_string());
 
 Int: i16 = <s:r"[0-9]+"> => i16::from_str(s).unwrap();
 Bool: bool = <s:r"((?i)true|false)"> => bool::from_str(&s.to_lowercase()).unwrap();
@@ -190,10 +217,18 @@ match {
     r"(?i)real",
     "(",
     ")",
+    ",",
     r"(?i)PROGRAM[ ]\w+" => PROG_NAME,
+    r"(?i)FUNCTION[ ]\w+" => FUNC_NAME,
     r"(?i)END_PROGRAM",
+    r"(?i)END_FUNCTION",
     r"(?i)END_VAR",
     r"(?i)VAR",
+    r"(?i)VAR_INPUT",
+    r"(?i)VAR_OUTPUT",
+    r"(?i)VAR_IN_OUT",
+    r"(?i)VAR_EXTERNAL",
+    r"(?i)VAR_GLOBAL",
     ":", // Type delcaration operator
     ";", // Statement end
     ":=", // Assignment operator

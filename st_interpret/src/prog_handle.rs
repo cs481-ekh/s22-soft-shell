@@ -1,5 +1,5 @@
 use std::collections::hash_map::Iter;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Program state and current execution information.
 use crate::ast::{
@@ -211,7 +211,7 @@ pub struct ProgHandle {
 /// Load in an ST file and set up a handle to execute it
 pub fn st_program_load(filename: &str, context: ProgContext) -> InterpreterResult<ProgHandle> {
     let file_contents = &read_file(filename)?;
-    let parsed_program_ast = parser::ProgramParser::new().parse(file_contents);
+    let parsed_program_ast = parser::ProgramParser::new().parse(&mut HashSet::new(), file_contents);
     match parsed_program_ast {
         Ok(program_ast) => InterpreterResult::Ok(ProgHandle {
             statement_counter: vec![(0, true)],
@@ -257,7 +257,7 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
     let program = &program_handle.ast;
 
     //use to get access to Vec<Assignments> as statements
-    let Prog(_, all_dec_lists, statements) = program;
+    let Prog(_, all_dec_lists, statements, _) = program;
 
     println!("{:?}", &counter_stack);
     //check if program is complete, only have to check top level here

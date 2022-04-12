@@ -3,7 +3,7 @@ PROGRAM 09_Main_Context_Check
     VAR
 	a : int;
         b : int;
-        Input2 : int
+        Input2 : int;
         Sum : INT;
         result0 : int;
         result1 : int;
@@ -13,8 +13,8 @@ PROGRAM 09_Main_Context_Check
         Input2 := 10;
         Sum := 2;
 
-        result0 := SimpleAddFunction(a, b) // expects outputs of 8
+        result0 := SimpleAddFunction(a, b); // expects outputs of 8
 
-        result1 := SimpleAddFunction(Input1 := a, Input2 := b) // expects outputs of 8
+        result1 := SimpleAddFunction(Input1 := a, Input2 := b); // expects outputs of 8
         
 END_PROGRAM

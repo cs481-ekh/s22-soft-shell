@@ -1,6 +1,6 @@
 //! AST node definitions
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 
 use chrono::naive::{NaiveDate, NaiveTime};
@@ -258,6 +258,7 @@ pub enum PrimaryExpression {
     Const(VariableValue),
     VarName(Box<String>),
     Expr(Box<Expression>),
+    Func(Box<String>, Vec<FunctionInput>), // First is function name, second is list of func args
 }
 
 impl AstNode for PrimaryExpression {
@@ -272,8 +273,17 @@ impl AstNode for PrimaryExpression {
                     .clone(),
             ),
             PrimaryExpression::Expr(expression) => Some(expression.execute(context)?.unwrap()),
+            PrimaryExpression::Func(func_name, input_list) => None, // TODO
         })
     }
+}
+
+/// AST node for a single input to a function
+/// First value is an optional variable to assign the expression to
+/// Second value is the input expression
+#[derive(Debug, Clone)]
+pub enum FunctionInput {
+    Input(Option<Box<String>>, Expression),
 }
 
 // Start of expression operators
@@ -401,10 +411,30 @@ impl AstNode for AssignmentStatement {
 }
 
 /// AST root node containing an entire ST program.
-/// First arg is name, Second arg is varlist, third is statement list
+/// First arg is name, Second arg is varlist, third is statement list, forth is a unique list of function names
 #[derive(Debug, Clone)]
 pub enum Program {
-    Prog(Box<String>, Option<Vec<Box<VarsDec>>>, Vec<Statement>),
+    Prog(
+        Box<String>,
+        Option<Vec<Box<VarsDec>>>,
+        Vec<Statement>,
+        HashSet<String>,
+    ),
+}
+
+/// AST root node containing a function.
+/// First arg is name, Second is return type, third arg is varlist, fourth is statement list, fifth is return statement, sixth is a unique list of function names
+/// The return statement is listed here as statement due to parsing requirements, it must be validated as a return statement at runtime.
+#[derive(Debug, Clone)]
+pub enum Function {
+    Func(
+        Box<String>,
+        VariableValue,
+        Option<Vec<Box<VarsDec>>>,
+        Vec<Statement>,
+        Statement,
+        HashSet<String>,
+    ),
 }
 
 // TODO: Fix, broken due to changes introduced in subset 6 and 7
