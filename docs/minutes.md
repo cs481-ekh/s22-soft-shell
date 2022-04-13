@@ -1,3 +1,32 @@
+Meeting 4/13/2022
+
+Scribe: Doug
+
+Present: Rob, Natalie, Doug, Carson, Anna
+
+Absent: None.
+
+Goals: Go West project update and handoff coordination
+
+- Anna leading meeting
+- decided to use next regularly schedule meeting for handoff meeting
+- Documentation planned to deliver User guide and Developers guide
+- user guide needs to include instructions for starting from scratch
+- requrest for List for next steps of developement 
+- rust documentation currently being generated in a file thats included in git ingore. Discussed with Go West, decided thats probably appropriate to keep from haveing to generate so much material "churn" every time something new is added to the repo.
+
+
+After Go West meeting meeting
+
+- Targeting 21st to have code and documentation initially done to allow weekend to work on poster
+- Everyone needs to be refining there sections they are working on for the rust documentaiton generation
+- Developers guide currently generates webpage, need to setup on the Go west repo at github page, can link to it from the teams public github page.
+- AST execution doesnt appear to have any work that needs to be done since most functionality is handled elsewere. Can be classified as a non task. Instead Anna is going to get started setting up project poster.
+- Will be Assuming all function files are in the same directory as program.
+- Discussion on modifying functions for Rust API
+- As soon as user guide is complete enough for someone to try to use our program let Go West know so they can take a look so corrections can be made for final documentation.
+
+__________________________________________________________________________
 Meeting 4/8/2022
 
 Scribe: Doug
