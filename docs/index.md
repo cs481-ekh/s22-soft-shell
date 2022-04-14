@@ -1,37 +1,26 @@
-## Welcome to GitHub Pages
+## Structured Text Interpreter
 
-You can use the [editor on GitHub](https://github.com/DouglasTucker/SoftShellPub/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Team Members
+- Anna Rift
+- Carson Thompson
+- Doug Tucker
+- Natalie Reece
+- Rob Muschamp
 
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Project Abstract
 
-```markdown
-Syntax highlighted code block
+Structured Text(ST) is a programming language used by Programmable Logic Controllers(PLCs) in modern robotic manufacturing facilities. As modern facilities become more complex and varied, so does the software requirements for traditional PLCs. Structured Text is a IEC 61131-3 standard language, supported by a significant number of PLC platforms, and very commonly used in Industrial Automation environments. Outside of costly proprietary options, PLC programming environments are very limited. For example, if a business uses an Allen Bradley PLC, the business must also use the Allen Bradley Integrated Development Environment (IDE).
 
-# Header 1
-## Header 2
-### Header 3
+To resolve this, we created write an open-source interpreter for basic Structured Text in the programming language Rust with a C API which can be used to execute Structured Text code natively free of proprietary restraints.This would allows the creation of a development environment for Structured Text with debugging and automated testing abilities, without the need for long development cycles involving expensive and specific PLC hardware. 
 
-- Bulleted
-- List
+With the use of the Interpreter currently a user can write and run a structured text program capable of performing basic arithmatic, Loops and selection statements as well as being able to call functions stored in seperate files in the directory. A Step function even allows a user to step through the program a single statment at a time to monitor the changes occuring in the variable values.
 
-1. Numbered
-2. List
 
-**Bold** and _Italic_ and `Code` text
+### Project Description
+What you actually build
+How it works
+Screen shots
 
-[Link](url) and ![Image](src)
-```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/DouglasTucker/SoftShellPub/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
