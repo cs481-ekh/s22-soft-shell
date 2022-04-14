@@ -24,3 +24,7 @@ How it works
 Screen shots
 
 
+### Grammar
+<img src="images/Grammar/Grammar1.png" alt="hi" class="inline"/>
+<img src="images/Grammar/Grammar2.png" alt="hi" class="inline"/>
+<img src="images/Grammar/Grammar3.png" alt="hi" class="inline"/>
