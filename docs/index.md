@@ -1,7 +1,7 @@
-## Structured Text Interpreter
+# Structured Text Interpreter
 
 
-### Team Members
+## Team Members
 - Anna Rift
 - Carson Thompson
 - Doug Tucker
@@ -9,7 +9,7 @@
 - Rob Muschamp
 
 
-### Project Abstract
+## Project Abstract
 
 Structured Text(ST) is a programming language used by Programmable Logic Controllers(PLCs) in modern robotic manufacturing facilities. As modern facilities become more complex and varied, so does the software requirements for traditional PLCs. Structured Text is a IEC 61131-3 standard language, supported by a significant number of PLC platforms, and very commonly used in Industrial Automation environments. Outside of costly proprietary options, PLC programming environments are very limited. For example, if a business uses an Allen Bradley PLC, the business must also use the Allen Bradley Integrated Development Environment (IDE).
 
@@ -18,13 +18,17 @@ To resolve this, we created write an open-source interpreter for basic Structure
 With the use of the Interpreter currently a user can write and run a structured text program capable of performing basic arithmatic, Loops and selection statements as well as being able to call functions stored in seperate files in the directory. A Step function even allows a user to step through the program a single statment at a time to monitor the changes occuring in the variable values.
 
 
-### Project Description
+## Project Description
 What you actually build
 How it works
 Screen shots
 
 
+
 ### Grammar
+The grammer currently supported by the structured text covers a large majority of the structured text language.  
+
+grammer currently being supported. 
 <img src="images/Grammar/Grammar1.png" alt="hi" class="inline"/>
 <img src="images/Grammar/Grammar2.png" alt="hi" class="inline"/>
 <img src="images/Grammar/Grammar3.png" alt="hi" class="inline"/>
