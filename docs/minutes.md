@@ -1,3 +1,28 @@
+Meeting 4/15/2022
+
+Scribe: Doug
+
+Present: Rob, Natalie, Doug, Carson, Anna
+
+Absent: None.
+
+Goals: Sprint 4 update meeting
+
+- Carson leading meeting
+- sprint ends next thursday currently we have a dependency chain on progress
+- Planning for additional meeting next wednesday
+
+Individiual updates
+
+- Carson no progress to report, waiting on Task #147 loading functions
+- Natalie Finishing up testing on C API, aiming to get done this this saturday.
+- Anna waiting for C API and then will be creating the rust API once they functions are in there final form for the C API. Will start on first iteration of the poster this weekend
+- Rob working on developer guide, have rust generated documentation working, need to look into how to display it on a private repo. Once C API complete then will begin batch testing functionality.
+- Doug Created ST test programs for function testing with INPUT, OUTPUT, and IN_OUT variables types. Set up Github pages on the Public team repo for the project, added statement from project plan and an outline of the grammar.
+
+
+__________________________________________________________________________
+
 Meeting 4/13/2022
 
 Scribe: Doug
