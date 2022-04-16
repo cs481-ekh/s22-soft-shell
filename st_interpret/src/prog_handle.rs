@@ -1,5 +1,6 @@
 use std::collections::hash_map::Iter;
 use std::collections::{HashMap, HashSet};
+use std::path::{Path, MAIN_SEPARATOR};
 
 /// Program state and current execution information.
 use crate::ast::{
@@ -11,6 +12,7 @@ use crate::ast::AstNode;
 use crate::ast::Function;
 use crate::ast::Program::Prog;
 use crate::read_file;
+use crate::ST_FILE_EXTENSION;
 
 lalrpop_mod!(pub parser);
 
@@ -232,9 +234,21 @@ pub struct ProgHandle {
 }
 
 /// Load in an ST file and set up a handle to execute it
-pub fn st_program_load(filename: &str, context: ProgContext) -> InterpreterResult<ProgHandle> {
+pub fn st_program_load(filename: &str, mut context: ProgContext) -> InterpreterResult<ProgHandle> {
     let file_contents = &read_file(filename)?;
-    let parsed_program_ast = parser::ProgramParser::new().parse(&mut HashSet::new(), file_contents);
+    let mut function_names = HashSet::new();
+    let parsed_program_ast = parser::ProgramParser::new().parse(&mut function_names, file_contents);
+    let directory_path = Path::new(filename)
+        .parent()
+        .ok_or(format!("File path has no parent: '{}'", filename))?;
+    let directory_path = directory_path.to_str().ok_or(format!(
+        "Could not convert pathname '{:#?}' to string",
+        directory_path
+    ))?;
+    let function_map = load_functions(function_names, directory_path)?;
+    for function_def in function_map {
+        context.add_function(function_def.0, function_def.1)?;
+    }
     match parsed_program_ast {
         Ok(program_ast) => InterpreterResult::Ok(ProgHandle {
             statement_counter: vec![(0, true)],
@@ -244,6 +258,52 @@ pub fn st_program_load(filename: &str, context: ProgContext) -> InterpreterResul
         }),
         Err(parse_error) => InterpreterResult::Err(format!("parse error: {}", parse_error)),
     }
+}
+
+// Initiate the recursive process of loading functions used by a program
+fn load_functions(
+    function_names: HashSet<String>,
+    directory_path: &str,
+) -> InterpreterResult<HashMap<String, Function>> {
+    let mut function_list = HashMap::new();
+    do_load_functions(function_names, directory_path, &mut function_list)?;
+    InterpreterResult::Ok(function_list)
+}
+
+// Recursive work step of loading functions from a list of called function names
+fn do_load_functions(
+    function_names: HashSet<String>,
+    directory_path: &str,
+    function_list: &mut HashMap<String, Function>,
+) -> InterpreterResult<()> {
+    for function_name in function_names {
+        // load function file
+        let function_filename = String::from(directory_path)
+            + &MAIN_SEPARATOR.to_string()
+            + &function_name
+            + ST_FILE_EXTENSION;
+        let function_file_contents = &read_file(&function_filename)?;
+
+        let mut additional_function_list: HashSet<String> = HashSet::new();
+        let parsed_function_ast = parser::FunctionParser::new()
+            .parse(&mut additional_function_list, function_file_contents);
+
+        // find functions called from this one that we haven't seen before
+        let mut new_functions = HashSet::new();
+        for potential_new_function in additional_function_list {
+            if !function_list.contains_key(&potential_new_function) {
+                new_functions.insert(potential_new_function);
+            }
+        }
+        // recurse on any newly-discovered functions
+        do_load_functions(new_functions, directory_path, function_list)?;
+
+        // insert this actual function
+        let function_ast =
+            parsed_function_ast.map_err(|parse_error| format!("parse error: {}", parse_error))?;
+        function_list.insert(String::from(function_name), function_ast);
+    }
+    InterpreterResult::Ok(())
 }
 
 /// Run a ST file

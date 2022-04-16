@@ -28,6 +28,33 @@ fn test_load_program() {
 }
 
 #[test]
+/// Test loading in a valid program with functions
+fn test_load_program_with_functions() {
+    let context = ProgContext::new();
+    let mut handle = st_program_load("tests/test_inputs/misc/09_Main_Add.st", context).unwrap();
+    handle
+        .context
+        .get_function(String::from("SimpleAddFunction"))
+        .unwrap();
+}
+
+#[test]
+/// Test loading in a valid program with functions that call other functions
+fn test_load_program_with_nested_functions() {
+    let context = ProgContext::new();
+    let mut handle =
+        st_program_load("tests/test_inputs/misc/09_Main_Add_Nested.st", context).unwrap();
+    handle
+        .context
+        .get_function(String::from("NestedAddFunction"))
+        .unwrap();
+    handle
+        .context
+        .get_function(String::from("IntIdentityFunction"))
+        .unwrap();
+}
+
+#[test]
 #[should_panic(expected = "Unrecognized token `Hello`")]
 /// Test that loading an invalid program fails
 fn test_load_invalid_program() {

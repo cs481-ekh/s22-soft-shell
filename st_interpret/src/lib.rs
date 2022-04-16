@@ -16,6 +16,8 @@ pub mod prog_handle;
 
 lalrpop_mod!(pub parser);
 
+const ST_FILE_EXTENSION: &str = ".st";
+
 /// Simple example function used for testing tests and C integration
 pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
     num_one + num_two
@@ -37,7 +39,7 @@ pub fn read_file(file_path: &str) -> InterpreterResult<String> {
     if let Ok(contents) = contents {
         InterpreterResult::Ok(contents)
     } else {
-        InterpreterResult::Err(String::from("Unable to read file"))
+        InterpreterResult::Err(format!("Unable to read file '{}'", file_path))
     }
 }
 
