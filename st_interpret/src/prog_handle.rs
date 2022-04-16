@@ -8,6 +8,7 @@ use crate::ast::{
 };
 //use crate::ast::AssignmentStatement;
 use crate::ast::AstNode;
+use crate::ast::Function;
 use crate::ast::Program::Prog;
 use crate::read_file;
 
@@ -27,6 +28,7 @@ pub struct ProgContext {
     symbols: HashMap<String, VariableInfo>,
     function_context: Option<Box<ProgContext>>,
     function_blocks: HashMap<String, Box<ProgContext>>,
+    functions: HashMap<String, Function>,
 }
 
 impl ProgContext {
@@ -35,6 +37,7 @@ impl ProgContext {
             symbols: HashMap::new(),
             function_context: None,
             function_blocks: HashMap::new(),
+            functions: HashMap::new(),
         }
     }
 
@@ -195,6 +198,26 @@ impl ProgContext {
                 .insert(function_name.to_ascii_lowercase(), (*context).clone());
         }
         self.function_context = None;
+    }
+
+    /// Saves the AST for a function in the program context
+    pub fn add_function(
+        &mut self,
+        function_name: String,
+        function_ast: Function,
+    ) -> InterpreterResult<()> {
+        let name = function_name.to_ascii_lowercase();
+        if self.symbols.contains_key(&name) {
+            return Err(String::from("A function already exists with this name"));
+        }
+        self.functions.insert(name, function_ast);
+        InterpreterResult::Ok(())
+    }
+
+    /// Returns the AST for the function with the given name, or None if there is no function with that name
+    pub fn get_function(&mut self, function_name: String) -> Option<&Function> {
+        let name = function_name.to_ascii_lowercase();
+        self.functions.get(&name)
     }
 }
 

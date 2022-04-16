@@ -47,7 +47,7 @@ mod tests {
     use std::collections::HashSet;
     use std::fs;
 
-    use crate::ast::{VariableKind, VariableValue};
+    use crate::ast::{Function, VariableKind, VariableValue};
     use crate::prog_handle::{st_program_load, st_program_run, ProgContext, VariableInfo};
     use crate::{lib_function_example_add, parser, read_file};
 
