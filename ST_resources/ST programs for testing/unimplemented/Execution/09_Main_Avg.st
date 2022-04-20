@@ -13,13 +13,13 @@ PROGRAM 09_Main_Avg
         b := 6;
 
         // four different ways of function input
-        avg1 := ValueAverageFunction(10, 10+5) // expects 12.5
+        avg1 := ValueAverageFunction(10, 10+5); // expects 12.5
 
-        avg2 := ValueAverageFunction(Value1 := 5, Value2 := 10) // expects 7.5
+        avg2 := ValueAverageFunction(Value1 := 5, Value2 := 10); // expects 7.5
 
-        avg3 := ValueAverageFunction(a, b) // expects 5
+        avg3 := ValueAverageFunction(a, b); // expects 5
 
-        avg4 := ValueAverageFunction(Value1 := a, Value2 := b) // expects 5
+        avg4 := ValueAverageFunction(Value1 := a, Value2 := b); // expects 5
 
         ST_TESTING_RESULT := (avg1 = 12.5 & avg2 = 7.5) & (avg3 = 5 & avg4 = 5);
         

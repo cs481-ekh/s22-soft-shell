@@ -14,9 +14,9 @@ PROGRAM 09_Main_Context_Check
         Input2 := 10;
         Sum := 2;
 
-        result0 := SimpleAddFunction(a, b) // expects outputs of 8
+        result0 := SimpleAddFunction(a, b); // expects outputs of 8
 
-        result1 := SimpleAddFunction(Input1 := a, Input2 := b) // expects outputs of 8
+        result1 := SimpleAddFunction(Input1 := a, Input2 := b); // expects outputs of 8
 
         ST_TESTING_RESULT := (result0 = 8 & result1 = 8) & (Input2 = 10 & Sum = 2);
         
