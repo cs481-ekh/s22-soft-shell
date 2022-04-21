@@ -1,3 +1,47 @@
+Meeting 4/20/2022
+
+Scribe: Doug
+
+Present: Rob, Natalie, Doug, Carson, Anna
+
+Absent: None.
+
+Goals: Sprint 4 working meeting for gitpage and poster
+
+- Carson leading meeting
+- sprint ends this thursday
+
+Individiual updates
+
+- carson:  no real updates, gonna be working on step function today or tomorrow
+- Anna: finished ST program loading functions, working on wrappers for rust API to match C API, will need to go in and change how we are doing testing to match in the integration and unit tests.
+- Doug: created ST test files for the main functionality we were trying to get. Set up the Gitub pages for the project and set up the abstract and introduction. Plan to work collaborativly to finish as team in todays meeting.
+- Natailie: Still stuck on figuring out error messages, trouble getting print statements to work
+- Rob: setup github page, due to setting github pages can be private even if the repo is private. Once we finish the project we can run the rust doc generation and then place them in an accesable folder on the repo to give access without the docs being generated ever commit. Will check with GO WEST to see what there preference is.
+
+Anna: will look into how to have rust documents included with zip
+
+Github pages
+
+- went through requirements and broke into sections and assigned to members
+- spent time writing out each section
+
+Poster
+
+- Anna created first draft of poster, added project plan information
+- max poster height 41.8 inches
+
+should include 
+
+- user API
+- add both diagrams from project proposal, project structure and parsing flow
+- code based example of program that uses the api
+- senior design showcase sticker/logo?
+- Rob will check on size and log use
+
+- next meeting friday, working session for poster
+_________________________________________________________________________
+
 Meeting 4/15/2022
 
 Scribe: Doug
