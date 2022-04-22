@@ -8,7 +8,7 @@ use crate::ast::{
     VariableValue, WhileStatement,
 };
 //use crate::ast::AssignmentStatement;
-use crate::ast::AstNode;
+use crate::ast::ExecutableAstNode;
 use crate::ast::Function;
 use crate::ast::Program::Prog;
 use crate::read_file;

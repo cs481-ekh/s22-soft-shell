@@ -1,4 +1,21 @@
-//! AST node definitions
+//! Contains Abstract Syntax Tree (AST) node definitions.
+//!
+//! AST nodes each constitute their own sub-tree of the entire AST, containing references to all
+//! the components that make them up. Most nodes implement [ExecutableAstNode], which defines an
+//! [execute](ExecutableAstNode::execute) method to evaluate that node. Evaluation requires access
+//! to the surrounding [context](ProgContext), and can produce side effects (via modifying the
+//! context), return a value, or both.
+//!
+//! Execution produces an [InterpreterResult] which should be checked for error after use, even if
+//! no value can be produced by the evaluation.
+//!
+//! [ExecutableAstNode] implementations are where the majority of the execution functionality of the
+//! interpreter is implemented. However, it shares this responsibility with the
+//! [crate::prog_handle::st_program_step] function. Step operates at the level of statement nodes,
+//! calling [execute](ExecutableAstNode::execute)  on each one in succession, as well as handling control
+//! flow properly. This is why control flow AST nodes do not implement [ExecutableAstNode] -- for example,
+//! executing an entire loop (such as [WhileStatement::While]) directly would not allow for stepping
+//! through the [Statement]s that make it up.
 
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
@@ -26,7 +43,7 @@ use crate::prog_handle::InterpreterResult;
 use crate::prog_handle::ProgContext;
 
 /// Trait containing functionality for executable AST nodes
-pub trait AstNode {
+pub trait ExecutableAstNode {
     /// Execute this node in the given context
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>>;
 }
@@ -62,7 +79,7 @@ pub enum Expression {
     Expr(XorExpression, Option<XorExpression>),
 }
 
-impl AstNode for Expression {
+impl ExecutableAstNode for Expression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Expr(left, right) = self;
         let right = match right {
@@ -78,11 +95,12 @@ impl AstNode for Expression {
 }
 
 #[derive(Debug, Clone)]
+/// An [AndExpression] optionally exclusive-or'd with another.
 pub enum XorExpression {
     Xor(AndExpression, Option<AndExpression>),
 }
 
-impl AstNode for XorExpression {
+impl ExecutableAstNode for XorExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Xor(left, right) = self;
         let right = match right {
@@ -98,11 +116,12 @@ impl AstNode for XorExpression {
 }
 
 #[derive(Debug, Clone)]
+/// Expression for boolean logical AND of two [Comparison]s.
 pub enum AndExpression {
     And(Comparison, Option<Comparison>),
 }
 
-impl AstNode for AndExpression {
+impl ExecutableAstNode for AndExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let And(left, right) = self;
         let right = match right {
@@ -118,11 +137,12 @@ impl AstNode for AndExpression {
 }
 
 #[derive(Debug, Clone)]
+/// Contains an [EquExpression], or optionally the result of its comparison to another.
 pub enum Comparison {
     CompEq(EquExpression, Option<(bool, EquExpression)>),
 }
 
-impl AstNode for Comparison {
+impl ExecutableAstNode for Comparison {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let CompEq(left, op_and_right) = self;
         let left = left.execute(context)?.unwrap();
@@ -141,11 +161,12 @@ impl AstNode for Comparison {
 }
 
 #[derive(Debug, Clone)]
+/// Contains an [AddExpression], or optionally the result of its equals or not-equals to another.
 pub enum EquExpression {
     Equ(AddExpression, Option<(ComparisonOperator, AddExpression)>),
 }
 
-impl AstNode for EquExpression {
+impl ExecutableAstNode for EquExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Equ(left, op_and_right) = self;
         let left = left.execute(context)?.unwrap();
@@ -159,11 +180,12 @@ impl AstNode for EquExpression {
 }
 
 #[derive(Debug, Clone)]
+/// Expression adding or subtracting two [Term]s.
 pub enum AddExpression {
     Add(Term, Option<(AddOperator, Term)>),
 }
 
-impl AstNode for AddExpression {
+impl ExecutableAstNode for AddExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Add(left, op_and_right) = self;
         let left = left.execute(context)?.unwrap();
@@ -177,11 +199,12 @@ impl AstNode for AddExpression {
 }
 
 #[derive(Debug, Clone)]
+/// Top-level representation of a single mathematical term.
 pub enum Term {
     Term(PowerExpression, Option<(MultiplyOperator, PowerExpression)>),
 }
 
-impl AstNode for Term {
+impl ExecutableAstNode for Term {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let TermInstance(left, op_and_right) = self;
         let left = left.execute(context)?.unwrap();
@@ -195,11 +218,12 @@ impl AstNode for Term {
 }
 
 #[derive(Debug, Clone)]
+/// A [UnaryExpression] optionally raised to the power of another.
 pub enum PowerExpression {
     Power(UnaryExpression, Option<UnaryExpression>),
 }
 
-impl AstNode for PowerExpression {
+impl ExecutableAstNode for PowerExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Power(left, right) = self;
         let left = left.execute(context)?.unwrap();
@@ -216,11 +240,12 @@ impl AstNode for PowerExpression {
 }
 
 #[derive(Debug, Clone)]
+/// A [PrimaryExpression] with optionally a [UnaryOperator] applied to it.
 pub enum UnaryExpression {
-    Unary(PrimaryExpression, Option<UnaryOperator>), //Note order flipped for consistency
+    Unary(PrimaryExpression, Option<UnaryOperator>),
 }
 
-impl AstNode for UnaryExpression {
+impl ExecutableAstNode for UnaryExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Unary(expression, operator) = self;
         let expression_value = expression.execute(context)?.unwrap();
@@ -254,6 +279,8 @@ impl AstNode for UnaryExpression {
 }
 
 #[derive(Debug, Clone)]
+/// An atomic expression of a value, which may be a constant [VariableValue], a variable name
+/// reference, a parenthetical [Expression], or a function call.
 pub enum PrimaryExpression {
     Const(VariableValue),
     VarName(Box<String>),
@@ -261,7 +288,7 @@ pub enum PrimaryExpression {
     Func(Box<String>, Vec<FunctionInput>), // First is function name, second is list of func args
 }
 
-impl AstNode for PrimaryExpression {
+impl ExecutableAstNode for PrimaryExpression {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         InterpreterResult::Ok(match self {
             PrimaryExpression::Const(value) => Some(value.clone()),
@@ -336,7 +363,7 @@ pub enum VarsDec {
     DecList(VariableKind, Box<HashMap<Box<String>, VariableValue>>),
 }
 
-impl AstNode for VarsDec {
+impl ExecutableAstNode for VarsDec {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let DecList(kind, decs) = self;
         for var_dec in decs.iter() {
@@ -398,7 +425,7 @@ pub enum AssignmentStatement {
     Asgn(Box<String>, Expression),
 }
 
-impl AstNode for AssignmentStatement {
+impl ExecutableAstNode for AssignmentStatement {
     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
         let Asgn(var_name, new_value) = self;
         let var_name = *var_name.clone();
@@ -437,40 +464,29 @@ pub enum Function {
     ),
 }
 
-// TODO: Fix, broken due to changes introduced in subset 6 and 7
-// impl AstNode for Program {
-//     fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
-//         let Prog(_, all_dec_lists, statements) = self;
-//
-//         // process variable declarations lists if present
-//         if let Some(program_dec_lists) = all_dec_lists {
-//             for dec_list in program_dec_lists {
-//                 dec_list.execute(context);
-//             }
-//         }
-//
-//         // execute all statements (assignments) sequentially
-//         for statement in statements {
-//             statement.execute(context);
-//         }
-//
-//         // this is the top level, so no evaluation value
-//         None
-//     }
-// }
-
+/// All arithmetic operators, used for internal calculation with [math_operation_result].
 pub enum MathOp {
     Multiply(MultiplyOperator),
     Add(AddOperator),
     Exponentiate,
 }
 
+/// All boolean operators, used for internal calculation with [boolean_operation_result].
 pub enum BoolOp {
     XOR,
     OR,
     AND,
 }
 
+/// Calculates the result of a boolean operation, if two operands are present.
+///
+/// # Arguments
+///
+/// * `left` - left operand
+/// * `op` - operator
+/// * `right` - right operand, which may be absent.
+///
+/// If `right` is [None](std::Option::None), there is no operation to perform and `left` is returned.
 fn boolean_operation_result(
     left: VariableValue,
     op: BoolOp,
@@ -495,6 +511,11 @@ fn boolean_operation_result(
     })
 }
 
+/// Gets a representation of the actual number in a [VariableValue] that can be used for math.
+///
+/// # Arguments
+///
+/// * `variable` - numeric variable to extract number from
 fn get_num_from_variable(variable: VariableValue) -> InterpreterResult<BigRational> {
     InterpreterResult::Ok(
         match variable {
@@ -520,6 +541,13 @@ fn get_num_from_variable(variable: VariableValue) -> InterpreterResult<BigRation
     )
 }
 
+/// Calculates the result of a comparison operation.
+///
+/// # Arguments
+///
+/// * `left` - left operand
+/// * `op` - comparison operator
+/// * `right` - right operand
 fn comparison_operation_result(
     left: VariableValue,
     op: &ComparisonOperator,
@@ -536,6 +564,13 @@ fn comparison_operation_result(
     InterpreterResult::Ok(VariableValue::BOOL(comparison_result))
 }
 
+/// Gets the result of a math operation between two numeric variables' values.
+///
+/// # Arguments
+///
+/// * `left` - left operand
+/// * `op` - math operator
+/// * `right` - right operand
 fn math_operation_result(
     left: VariableValue,
     op: MathOp,
