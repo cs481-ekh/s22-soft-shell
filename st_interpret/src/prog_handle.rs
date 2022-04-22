@@ -29,6 +29,7 @@ use crate::ST_FILE_EXTENSION;
 lalrpop_mod!(pub parser);
 
 #[derive(Debug, PartialEq, Clone)]
+#[repr(C)]
 /// All information stored about a variable.
 pub struct VariableInfo {
     pub var_value: VariableValue,
@@ -36,6 +37,7 @@ pub struct VariableInfo {
 }
 
 #[derive(Debug, Clone)]
+// #[repr(C)]
 /// Program context struct which stores the symbol table and other long-lived state information of
 /// the ST program.
 pub struct ProgContext {
@@ -236,6 +238,7 @@ impl ProgContext {
 }
 
 #[derive(Debug)]
+// #[repr(C)]
 /// Main struct for controlling program execution
 pub struct ProgHandle {
     statement_counter: Vec<(usize, bool)>,

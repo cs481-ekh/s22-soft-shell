@@ -49,6 +49,7 @@ pub trait ExecutableAstNode {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+// #[repr(C)]
 /// ST variable types, each holding a corresponding value of that type.
 pub enum VariableValue {
     INT(i16),
@@ -67,6 +68,61 @@ pub enum VariableValue {
     LTIME(Duration),
     DATE(NaiveDate),
     TimeOfDay(NaiveTime),
+}
+
+impl std::fmt::Display for VariableValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        return match &self {
+            INT(x) => {
+                write!(f, "int: {}", x)
+            }
+            BOOL(x) => {
+                write!(f, "bool: {}", x)
+            }
+            BYTE(x) => {
+                write!(f, "byte: {}", x)
+            }
+            WORD(x) => {
+                write!(f, "word: {}", x)
+            }
+            UINT(x) => {
+                write!(f, "uint: {}", x)
+            }
+            DWORD(x) => {
+                write!(f, "dword: {}", x)
+            }
+            DINT(x) => {
+                write!(f, "dint: {}", x)
+            }
+            REAL(x) => {
+                write!(f, "real: {}", x)
+            }
+            LREAL(x) => {
+                write!(f, "lreal: {}", x)
+            }
+            CHAR(x) => {
+                write!(f, "char: {}", x)
+            }
+            WCHAR(x) => {
+                write!(f, "wchar: {}", x)
+            }
+            STRING(x) => {
+                write!(f, "string: {}", x)
+            }
+            TIME(x) => {
+                write!(f, "time: {:?}", x)
+            }
+            LTIME(x) => {
+                write!(f, "ltime: {:?}", x)
+            }
+            DATE(x) => {
+                write!(f, "date: {}", x)
+            }
+            TimeOfDay(x) => {
+                write!(f, "time_of_day: {}", x)
+            }
+        };
+    }
 }
 
 // Start of expressions
@@ -346,6 +402,7 @@ pub enum UnaryOperator {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+// #[repr(C)]
 /// Different 'kinds' of ST variables, such as input, output, etc.
 pub enum VariableKind {
     NORMAL,
@@ -354,6 +411,19 @@ pub enum VariableKind {
     InOut,
     EXTERNAL,
     GLOBAL,
+}
+
+impl std::fmt::Display for VariableKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        return match &self {
+            VariableKind::NORMAL => write!(f, "NORMAL"),
+            VariableKind::INPUT => write!(f, "INPUT"),
+            VariableKind::OUTPUT => write!(f, "OUTPUT"),
+            VariableKind::InOut => write!(f, "IN_OUT"),
+            VariableKind::EXTERNAL => write!(f, "EXTERNAL"),
+            VariableKind::GLOBAL => write!(f, "GLOBAL"),
+        };
+    }
 }
 // End of expressions and operators
 
@@ -440,6 +510,7 @@ impl ExecutableAstNode for AssignmentStatement {
 /// AST root node containing an entire ST program.
 /// First arg is name, Second arg is varlist, third is statement list, forth is a unique list of function names
 #[derive(Debug, Clone)]
+// #[repr(C)]
 pub enum Program {
     Prog(
         Box<String>,
