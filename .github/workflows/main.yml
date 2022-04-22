@@ -32,7 +32,9 @@ jobs:
       run: ./clean.sh
     - name: generate rustdoc documentation
       run: cargo doc --document-private-items
-    - uses: actions/upload-artifact@v2
+    - name: zip documentation
+      run: cd ${{ github.workspace }}/st_interpret/target/ && zip -r ${{ github.workspace}}/rustdocs-${{ github.sha }}.zip doc/
+    - uses: actions/upload-artifact@v3
       with:
         name: rustdocs-${{ github.sha }}
-        path: ${{ github.workspace }}/st_interpret/target/doc/st_interpret
+        path: ${{ github.workspace}}/rustdocs-${{ github.sha }}.zip
