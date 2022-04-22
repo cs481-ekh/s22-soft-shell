@@ -1,3 +1,15 @@
+//! Module containing the program context and program handle that control the interpretation of
+//! the Structured Text files.
+//!
+//! Program context information goes here.
+//!
+//! Program handle controls the execution of the Structured Text program. A Structured Text program
+//! is first loaded using the method [st_program_load] which load the program context and creates a
+//! handle for the program. Once the program is loaded, [st_program_run] is called and executes the
+//! program while updating the context as it runs. When the programming is being executed, the
+//! method [st_program_step] is called to step through the code line-by-line while updating the
+//! context.
+//!
 use std::collections::hash_map::Iter;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, MAIN_SEPARATOR};
@@ -314,8 +326,9 @@ fn do_load_functions(
     InterpreterResult::Ok(())
 }
 
-/// Run a ST file
-/// ProgramHandle prog_handle = st_program_load(“testprogram.st”, context);
+/// Function executes the Structured Text code using the program handle. Execution is done by calling
+/// the [st_program_step] function until the function return true. When the [st_program_step] returns
+/// true, the program will end.
 pub fn st_program_run(program_handle: &mut ProgHandle) -> InterpreterResult<()> {
     loop {
         let ret_val = st_program_step(program_handle)?;
@@ -328,11 +341,10 @@ pub fn st_program_run(program_handle: &mut ProgHandle) -> InterpreterResult<()> 
     InterpreterResult::Ok(())
 }
 
-// function steps through one state from list stored in ast
-// inputs: Program Handle
-// outputs: Boolean used for determining when program is complete. True means you
-//          have excecuted all statements in the list. can be expanded to use
-//          with error detection
+/// Function that steps through the Structured Text program line-by-line with the program handle
+/// while updating the context after each line of code. Returns the an InterpreterResult to determine
+/// if the program is done executing the step function. If the InterpreterResult returns True than
+/// the program has executed all statements in the list.
 pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<bool> {
     //for debugging
     //println!("step: {count}", count = ProgramHandle.statement_counter);
