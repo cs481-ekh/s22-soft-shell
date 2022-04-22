@@ -234,7 +234,15 @@ pub struct ProgHandle {
 }
 
 /// Load in an ST file and set up a handle to execute it
-pub fn st_program_load(filename: &str, mut context: ProgContext) -> InterpreterResult<ProgHandle> {
+pub fn st_program_load(filename: &str) -> InterpreterResult<ProgHandle> {
+    st_program_load_actual(filename, ProgContext::new())
+}
+
+/// Load in an ST file and set up a handle to execute it, using the given context
+fn st_program_load_actual(
+    filename: &str,
+    mut context: ProgContext,
+) -> InterpreterResult<ProgHandle> {
     let file_contents = &read_file(filename)?;
     let mut function_names = HashSet::new();
     let parsed_program_ast = parser::ProgramParser::new().parse(&mut function_names, file_contents);
@@ -604,6 +612,16 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
         }
     }
     InterpreterResult::Ok(false)
+}
+
+/// Get information about a variable from the symbol table within the specified [ProgHandle]
+pub fn get_var(program_handle: &ProgHandle, name: String) -> Option<&VariableInfo> {
+    program_handle.context.get_var(name)
+}
+
+/// Gets all variables from the symbol table of the specified [ProgHandle], returning an iterator
+pub fn get_all_vars(program_handle: &ProgHandle) -> Iter<'_, String, VariableInfo> {
+    program_handle.context.get_all_vars()
 }
 
 pub type InterpreterResult<T> = std::result::Result<T, String>;

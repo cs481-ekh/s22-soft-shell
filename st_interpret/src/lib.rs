@@ -7,7 +7,7 @@ extern crate lalrpop_util;
 use std::collections::HashSet;
 use std::fs;
 
-use crate::prog_handle::InterpreterResult;
+use crate::prog_handle::{st_program_load, st_program_run, InterpreterResult, ProgContext};
 pub use ast::VariableValue;
 
 mod ast;
@@ -21,6 +21,63 @@ const ST_FILE_EXTENSION: &str = ".st";
 /// Simple example function used for testing tests and C integration
 pub fn lib_function_example_add(num_one: usize, num_two: usize) -> usize {
     num_one + num_two
+}
+
+/// Tests parser on all st files within a specified folder
+pub fn parser_batch_test_st_folder(folder_path: &str) {
+    let paths = fs::read_dir(folder_path).unwrap();
+
+    for path in paths {
+        let path = path.unwrap().path();
+        let path_name = path.to_str().unwrap();
+
+        println!("Name: {}", path_name);
+
+        let file = read_file(path_name).unwrap();
+        let parse_result = parser::ProgramParser::new().parse(&mut HashSet::new(), &file);
+
+        println!("{:?}\n", parse_result);
+        assert!(parse_result.is_ok());
+    }
+}
+
+/// Test execution of all ST files in a folder.
+/// Simple runs the each program and asserts it contains a boolean variable 'ST_TESTING_RESULT'
+/// that is true after execution completes. This allows creating ST example files that
+/// essentially include their own assertions about their functionality.
+pub fn interpreter_batch_test_st_folder(folder_path: &str) {
+    println!("Executing all ST files in folder {}", folder_path);
+    let paths = fs::read_dir(folder_path).unwrap();
+
+    for path in paths {
+        let path = path.unwrap().path();
+        let file_name = path.to_str().unwrap();
+        println!("Executing file {}", file_name);
+
+        let mut prog_handle = st_program_load(file_name).unwrap();
+        st_program_run(&mut prog_handle).unwrap();
+
+        println!("Program handle dump: {:?}", prog_handle);
+        assert_eq!(
+            prog_handle
+                .context
+                .get_var(String::from("ST_TESTING_RESULT"))
+                .unwrap()
+                .var_value,
+            VariableValue::BOOL(true)
+        );
+    }
+}
+
+/// Test parsing an ST function definition
+pub fn parser_test_st_function(file_path: &str) {
+    println!("Name: {}", file_path);
+
+    let file = read_file(file_path).unwrap();
+    let parse_result = parser::FunctionParser::new().parse(&mut HashSet::new(), &file);
+
+    println!("{:?}\n", parse_result);
+    assert!(parse_result.is_ok());
 }
 
 /// Check that the parser accepts a valid file
@@ -52,121 +109,6 @@ mod tests {
     use crate::ast::{Function, VariableKind, VariableValue};
     use crate::prog_handle::{st_program_load, st_program_run, ProgContext, VariableInfo};
     use crate::{lib_function_example_add, parser, read_file};
-
-    #[test]
-    /// Check parser succeeds over subset 1 ST programs.
-    fn subset1_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_subset_1");
-    }
-
-    #[test]
-    /// Check parser succeeds over subset 3 and 4 ST programs.
-    fn subset3_4_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_subset_3-4");
-    }
-
-    #[test]
-    /// Check parser succeeds over subset 5 and 6 ST programs.
-    fn subset5_6_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_subset_5-6");
-    }
-
-    #[test]
-    /// Check parser succeeds over subset 7 ST programs.
-    fn subset7_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_subset_7");
-    }
-
-    #[test]
-    /// Check parser succeeds over subset 8 and 9 ST programs.
-    fn subset8_9_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_subset_8-9");
-    }
-
-    #[test]
-    /// Check parser succeeds over subset 9 ST functions
-    fn subset9_func_parse() {
-        parser_test_st_function("tests/test_inputs/st_subset_9_funcs/SimpleAddFunction.st");
-        parser_test_st_function("tests/test_inputs/st_subset_9_funcs/ValueAverageFunction.st");
-    }
-
-    #[test]
-    /// Check parser succeeds over parts of the ST language not currently included in a target subset.
-    fn stretch_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_stretch");
-    }
-
-    #[test]
-    #[should_panic(expected = "assertion failed: parse_result.is_ok()")]
-    /// Check parser correctly finds incorrect st files
-    fn fail_parse() {
-        parser_batch_test_st_folder("tests/test_inputs/st_failure/parse_fail");
-    }
-
-    #[test]
-    /// Check subset 1 programs execute correctly
-    fn execute_subset_1() {
-        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_1");
-    }
-
-    #[test]
-    /// Check subset 3-4 programs execute correctly
-    fn execute_subset_3_4() {
-        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_3-4");
-    }
-
-    #[test]
-    /// Check subset 5-6 programs execute correctly
-    fn execute_subset_5_6() {
-        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_5-6");
-    }
-
-    #[test]
-    /// Check subset 7 programs execute correctly
-    fn execute_subset_7() {
-        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_subset_7");
-    }
-
-    #[test]
-    /// Check stretch (no assigned subset) programs execute correctly
-    fn execute_stretch() {
-        interpreter_batch_test_st_folder("tests/test_inputs/execution/st_stretch");
-    }
-
-    #[test]
-    /// Example of a basic interpretation test
-    fn execute_basic() {
-        let mut prog_handle = st_program_load(
-            "tests/test_inputs/st_subset_1/01_mixed.st",
-            ProgContext::new(),
-        )
-        .unwrap();
-        st_program_run(&mut prog_handle).unwrap();
-        assert_eq!(
-            prog_handle
-                .context
-                .get_var(String::from("a"))
-                .unwrap()
-                .var_value,
-            VariableValue::REAL(1.2)
-        );
-        assert_eq!(
-            prog_handle
-                .context
-                .get_var(String::from("b"))
-                .unwrap()
-                .var_value,
-            VariableValue::INT(5)
-        );
-        assert_eq!(
-            prog_handle
-                .context
-                .get_var(String::from("c"))
-                .unwrap()
-                .var_value,
-            VariableValue::BOOL(true)
-        );
-    }
 
     #[test]
     /// Test addition sample function.
@@ -404,9 +346,7 @@ mod tests {
 
     #[test]
     fn run_program() {
-        let context = ProgContext::new();
-        let mut prog_handle =
-            st_program_load("tests/test_inputs/st_subset_1/01_Int.st", context).unwrap();
+        let mut prog_handle = st_program_load("tests/test_inputs/st_subset_1/01_Int.st").unwrap();
         st_program_run(&mut prog_handle).unwrap();
     }
 
@@ -429,61 +369,5 @@ mod tests {
             )
             .unwrap_err()
             .contains("A variable already exists with this name"));
-    }
-
-    /// Tests parser on all st files within a specified folder
-    fn parser_batch_test_st_folder(folder_path: &str) {
-        let paths = fs::read_dir(folder_path).unwrap();
-
-        for path in paths {
-            let path = path.unwrap().path();
-            let path_name = path.to_str().unwrap();
-
-            println!("Name: {}", path_name);
-
-            let file = read_file(path_name).unwrap();
-            let parse_result = parser::ProgramParser::new().parse(&mut HashSet::new(), &file);
-
-            println!("{:?}\n", parse_result);
-            assert!(parse_result.is_ok());
-        }
-    }
-
-    /// Test execution of all ST files in a folder.
-    /// Simple runs the each program and asserts it contains a boolean variable 'ST_TESTING_RESULT'
-    /// that is true after execution completes. This allows creating ST example files that
-    /// essentially include their own assertions about their functionality.
-    fn interpreter_batch_test_st_folder(folder_path: &str) {
-        println!("Executing all ST files in folder {}", folder_path);
-        let paths = fs::read_dir(folder_path).unwrap();
-
-        for path in paths {
-            let path = path.unwrap().path();
-            let file_name = path.to_str().unwrap();
-            println!("Executing file {}", file_name);
-
-            let mut prog_handle = st_program_load(file_name, ProgContext::new()).unwrap();
-            st_program_run(&mut prog_handle).unwrap();
-
-            println!("Program handle dump: {:?}", prog_handle);
-            assert_eq!(
-                prog_handle
-                    .context
-                    .get_var(String::from("ST_TESTING_RESULT"))
-                    .unwrap()
-                    .var_value,
-                VariableValue::BOOL(true)
-            );
-        }
-    }
-
-    fn parser_test_st_function(file_path: &str) {
-        println!("Name: {}", file_path);
-
-        let file = read_file(file_path).unwrap();
-        let parse_result = parser::FunctionParser::new().parse(&mut HashSet::new(), &file);
-
-        println!("{:?}\n", parse_result);
-        assert!(parse_result.is_ok());
     }
 }
