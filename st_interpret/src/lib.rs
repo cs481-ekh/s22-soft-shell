@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::fs;
 
 use crate::prog_handle::{st_program_load, st_program_run, InterpreterResult, ProgContext};
-pub use ast::VariableValue;
+pub use ast::{VariableKind, VariableValue};
 
 mod ast;
 mod capi;

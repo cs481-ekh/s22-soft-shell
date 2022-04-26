@@ -629,6 +629,25 @@ pub fn st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<boo
     InterpreterResult::Ok(false)
 }
 
+/// Add a variable to the context of the specified [ProgHandle]
+pub fn add_var(
+    program_handle: &mut ProgHandle,
+    name: String,
+    kind: VariableKind,
+    value: VariableValue,
+) -> InterpreterResult<()> {
+    program_handle.context.add_var(name, kind, value)
+}
+
+/// Modify a variable in the context of the specified [ProgHandle]
+pub fn update_var(
+    program_handle: &mut ProgHandle,
+    name: &str,
+    new_value: VariableValue,
+) -> InterpreterResult<()> {
+    program_handle.context.update_var(name, new_value)
+}
+
 /// Get information about a variable from the symbol table within the specified [ProgHandle]
 pub fn get_var(program_handle: &ProgHandle, name: String) -> Option<&VariableInfo> {
     program_handle.context.get_var(name)

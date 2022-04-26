@@ -1,9 +1,9 @@
 // Rust integration tests here
 
-use st_interpret::prog_handle::{get_var, st_program_load, st_program_run};
+use st_interpret::prog_handle::{add_var, get_var, st_program_load, st_program_run, update_var};
 use st_interpret::{
     interpreter_batch_test_st_folder, parser_batch_test_st_folder, parser_test_st_function,
-    read_file, VariableValue,
+    read_file, VariableKind, VariableValue,
 };
 
 /// Test lalrpop functionality
@@ -165,4 +165,24 @@ fn execute_basic() {
         get_var(&prog_handle, String::from("c")).unwrap().var_value,
         VariableValue::BOOL(true)
     );
+}
+
+#[test]
+/// Test using context-related API wrapper functions on a program
+fn test_context_api_wrappers() {
+    let mut prog_handle = st_program_load("tests/test_inputs/st_subset_1/01_Int.st").unwrap();
+    add_var(
+        &mut prog_handle,
+        String::from("testvar"),
+        VariableKind::NORMAL,
+        VariableValue::INT(5),
+    )
+    .unwrap();
+    let result = get_var(&mut prog_handle, String::from("testvar")).unwrap();
+    assert_eq!(VariableValue::INT(5), result.var_value);
+    assert_eq!(VariableKind::NORMAL, result.var_kind);
+    update_var(&mut prog_handle, "testvar", VariableValue::INT(4)).unwrap();
+    let result = get_var(&mut prog_handle, String::from("testvar")).unwrap();
+    assert_eq!(VariableValue::INT(4), result.var_value);
+    assert_eq!(VariableKind::NORMAL, result.var_kind);
 }
