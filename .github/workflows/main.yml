@@ -28,9 +28,6 @@ jobs:
       run: ./build.sh
     - name: run tests
       run: ./test.sh
-    - name: run demo program
-      working-directory: ./demos/rust_lib_usage/st_rust_demo1
-      run: cargo run
     - name: post-build clean
       run: ./clean.sh
     - name: generate rustdoc documentation
