@@ -29,16 +29,16 @@ When a Structured Text file is loaded into our interpreter it is first parsed an
 
 After parsing is complete and the AST has been generated, the interpreter moves through the AST nodes and evaluates them as it traverses. The program handle is used to step through the program by walking through the list of statement nodes. This is used for control flow when using if statements and while loops.
 
-### User API - Natalie TODO: update once API is done
+### User API
 
 The following functions are provided:
-* st_program_load - loads a program from a file
-* st_program_step - steps forward one line in the program
-* st_program_run - runs the whole program
-* get_all_vars - returns all the currently in scope variables
-* get_var - returns a variable with the given name
-* update_var - changes the value of a variable
-* add_var - adds a new variable
+* st_program_load(filename: &str) -> InterpreterResult<ProgHandle> - loads a program from a file
+* st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<bool> - steps forward one line in the program
+* st_program_run(program_handle: &mut ProgHandle) -> InterpreterResult<()> - runs the whole program
+* get_all_vars(program_handle: &ProgHandle) -> Iter<'\_, String, VariableInfo> - returns all the currently in scope variables
+* get_var(program_handle: &ProgHandle, name: String) -> Option<&VariableInfo> - returns a variable with the given name
+* update_var(program_handle: &mut ProgHandle, name: &str, new_value: VariableValue) -> InterpreterResult<()> - changes the value of a variable
+* add_var(program_handle: &mut ProgHandle, name: String, kind: VariableKind, value: VariableValue) -> InterpreterResult<()> - adds a new variable
 
 
 ### Current Supported Grammar
