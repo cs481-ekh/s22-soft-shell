@@ -1,37 +1,34 @@
-use st_interpret::prog_handle::{
-    st_program_load, st_program_run, st_program_step, InterpreterResult, ProgContext,
+use st_interpret::{
+    get_all_vars, get_var, st_program_load, st_program_run, st_program_step, update_var,
+    InterpreterResult, VariableValue,
 };
-use st_interpret::VariableValue;
 
 fn main() -> InterpreterResult<()> {
     println!("Example 1 - Execute a program");
-    let mut context = ProgContext::new();
-    let mut prog1 = st_program_load("st_testfiles/Calc_Test.st", context)?;
+    let mut prog1 = st_program_load("st_testfiles/Calc_Test.st")?;
 
     st_program_run(&mut prog1)?;
-    println!("d: {:?}", prog1.context.get_var("d".to_string()).unwrap());
+    println!("d: {:?}", get_var(&prog1, "d".to_string()).unwrap());
 
     println!("\nExample 2 - Step through a program");
-    let mut context2 = ProgContext::new();
-    let mut prog2 = st_program_load("st_testfiles/Times2.st", context2)?;
+    let mut prog2 = st_program_load("st_testfiles/Times2.st")?;
     let mut is_finished = false;
 
     while !is_finished {
         is_finished = st_program_step(&mut prog2)?;
-        println!("{:?}", prog2.context.get_all_vars());
+        println!("{:?}", get_all_vars(&prog2));
     }
 
     println!("\nExample 3 - Modify a program mid execution");
-    let mut context3 = ProgContext::new();
-    let mut prog3 = st_program_load("st_testfiles/Times2.st", context3)?;
+    let mut prog3 = st_program_load("st_testfiles/Times2.st")?;
 
     st_program_step(&mut prog3)?;
     st_program_step(&mut prog3)?;
 
-    prog3.context.update_var("b", VariableValue::INT(6))?;
+    update_var(&mut prog3, "b", VariableValue::INT(6))?;
 
     st_program_step(&mut prog3)?;
-    println!("{:?}", prog3.context.get_all_vars());
+    println!("{:?}", get_all_vars(&prog3));
 
     InterpreterResult::Ok(())
 }
