@@ -32,13 +32,28 @@ After parsing is complete and the AST has been generated, the interpreter moves 
 ### User API
 
 The following functions are provided:
-* st_program_load(filename: &str) -> InterpreterResult<ProgHandle> - loads a program from a file
-* st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<bool> - steps forward one line in the program
-* st_program_run(program_handle: &mut ProgHandle) -> InterpreterResult<()> - runs the whole program
-* get_all_vars(program_handle: &ProgHandle) -> Iter<'\_, String, VariableInfo> - returns all the currently in scope variables
-* get_var(program_handle: &ProgHandle, name: String) -> Option<&VariableInfo> - returns a variable with the given name
-* update_var(program_handle: &mut ProgHandle, name: &str, new_value: VariableValue) -> InterpreterResult<()> - changes the value of a variable
-* add_var(program_handle: &mut ProgHandle, name: String, kind: VariableKind, value: VariableValue) -> InterpreterResult<()> - adds a new variable
+* Loads a Structured Text program from a file
+
+`st_program_load(filename: &str) -> InterpreterResult<ProgHandle>`
+* Step forward one line in the program
+
+`st_program_step(program_handle: &mut ProgHandle) -> InterpreterResult<bool>`
+* Run the whole program
+
+`st_program_run(program_handle: &mut ProgHandle) -> InterpreterResult<()>`
+* Retrieve all the currently in scope variables
+
+`get_all_vars(program_handle: &ProgHandle) -> Iter<'\_, String, VariableInfo>`
+* Retrieve a variable with the given name
+
+`get_var(program_handle: &ProgHandle, name: String) -> Option<&VariableInfo>`
+
+* Change the value of a variable
+
+`update_var(program_handle: &mut ProgHandle, name: &str, new_value: VariableValue) -> InterpreterResult<()>`
+* Add a new variable
+
+`add_var(program_handle: &mut ProgHandle, name: String, kind: VariableKind, value: VariableValue) -> InterpreterResult<()>`
 
 
 ### Current Supported Grammar
