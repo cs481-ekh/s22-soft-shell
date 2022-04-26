@@ -32,7 +32,7 @@ After parsing is complete and the AST has been generated, the interpreter moves 
 ### User API
 
 The following functions are provided:
-* Loads a Structured Text program from a file
+* Load a Structured Text program from a file
 
 `st_program_load(filename: &str) -> InterpreterResult<ProgHandle>`
 * Step forward one line in the program
