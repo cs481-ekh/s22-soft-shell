@@ -7,7 +7,10 @@ extern crate lalrpop_util;
 use std::collections::HashSet;
 use std::fs;
 
-use crate::prog_handle::{st_program_load, st_program_run, InterpreterResult, ProgContext};
+pub use crate::prog_handle::{
+    get_all_vars, get_var, st_program_load, st_program_run, st_program_step, update_var,
+    InterpreterResult,
+};
 pub use ast::{VariableKind, VariableValue};
 
 mod ast;
