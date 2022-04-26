@@ -16,7 +16,7 @@ Structured Text is a programming language used by Programmable Logic Controllers
 To resolve this, we created write an open-source interpreter for basic Structured Text in the programming language Rust with a C API which can be used to execute Structured Text code natively free of proprietary restraints.This would allows the creation of a development environment for Structured Text with debugging and automated testing abilities, without the need for long development cycles involving expensive and specific PLC hardware.
 
 
-## Project Description - TODO link other resources such as developer guide
+## Project Description
 
 With the use of the Interpreter currently a user can write and run a Structured Text program capable of performing basic arithmetic, Loops and selection statements as well as being able to call functions stored in separate files in the directory. A Step function even allows a user to step through the program a single statement at a time to monitor the changes occuring in the variable values.
 
