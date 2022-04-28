@@ -68,6 +68,7 @@ pub enum VariableValue {
     LTIME(Duration),
     DATE(NaiveDate),
     TimeOfDay(NaiveTime),
+    PauseFunction,
 }
 
 impl std::fmt::Display for VariableValue {
@@ -120,6 +121,9 @@ impl std::fmt::Display for VariableValue {
             }
             TimeOfDay(x) => {
                 write!(f, "time_of_day: {}", x)
+            }
+            PauseFunction => {
+                write!(f, "pause indicator")
             }
         };
     }
@@ -356,7 +360,73 @@ impl ExecutableAstNode for PrimaryExpression {
                     .clone(),
             ),
             PrimaryExpression::Expr(expression) => Some(expression.execute(context)?.unwrap()),
-            PrimaryExpression::Func(func_name, input_list) => None, // TODO
+            PrimaryExpression::Func(func_name, input_list) => {
+                let mut value_list = Vec::new();
+
+                // execute each function inout expression
+                for fun_in in input_list {
+                    let FunctionInput::Input(name, _) = fun_in;
+
+                    value_list.insert(0, (name, fun_in.execute(context)?.unwrap()));
+                }
+
+                let temp_context = &mut context.clone();
+
+                let function_ast = temp_context
+                    .get_function((**func_name.clone()).to_string())
+                    .ok_or(format!(
+                        "Could not find referenced function '{}'",
+                        func_name
+                    ))?;
+
+                context.start_function_block((**func_name.clone()).to_string());
+                let mut new_func_context = &mut *(context
+                    .function_context_list_to_eval
+                    .as_ref()
+                    .unwrap()
+                    .clone()[0]);
+                new_func_context.set_func_ast(function_ast.clone());
+                new_func_context.set_input_vars(input_list.to_vec());
+
+                //println!("FUNCTION CONTEXT {:?}", context);
+                let Function::Func(_, _, dec, _, _, _) = function_ast.clone();
+
+                // execute the input dec list
+                if let Some(_) = dec {
+                    for dec_list in dec.unwrap() {
+                        let VarsDec::DecList(kind, _) = *dec_list;
+
+                        if let VariableKind::INPUT = kind {
+                            dec_list.execute(&mut new_func_context)?;
+                        }
+                    }
+                }
+
+                let temp_func_context = new_func_context.clone();
+                let func_vars = &mut temp_func_context.get_all_vars();
+
+                for func_input in value_list {
+                    let next_var = func_vars.next().ok_or("Too many inputs to function");
+
+                    if func_input.0.is_some() {
+                        new_func_context.update_var(
+                            &func_input.0.as_ref().unwrap().clone().to_string(),
+                            func_input.1,
+                        )?;
+                    } else {
+                        new_func_context
+                            .update_var(next_var.as_ref().unwrap().clone().0, func_input.1)?;
+                    }
+                }
+
+                // this caused regression
+                let mut temp_context = context.function_context_list_to_eval.clone().unwrap();
+                temp_context.remove(0);
+                temp_context.insert(0, Box::new(new_func_context.clone()));
+
+                context.function_context_list_to_eval = Some(temp_context);
+                Some(PauseFunction)
+            }
         })
     }
 }
@@ -367,6 +437,14 @@ impl ExecutableAstNode for PrimaryExpression {
 #[derive(Debug, Clone)]
 pub enum FunctionInput {
     Input(Option<Box<String>>, Expression),
+}
+
+impl ExecutableAstNode for FunctionInput {
+    fn execute(&self, context: &mut ProgContext) -> InterpreterResult<Option<VariableValue>> {
+        let FunctionInput::Input(_, expr) = self;
+
+        expr.execute(context)
+    }
 }
 
 // Start of expression operators
@@ -501,9 +579,22 @@ impl ExecutableAstNode for AssignmentStatement {
         let var_name = *var_name.clone();
 
         let new_value = new_value.execute(context)?.unwrap();
-        context.update_var(&var_name, new_value)?;
 
-        InterpreterResult::Ok(None)
+        let mut function_paused = false;
+        match new_value {
+            PauseFunction => {
+                function_paused = true;
+            }
+            _ => {
+                context.update_var(&var_name, new_value)?;
+            }
+        }
+
+        if function_paused {
+            InterpreterResult::Ok(Some(PauseFunction))
+        } else {
+            InterpreterResult::Ok(None)
+        }
     }
 }
 

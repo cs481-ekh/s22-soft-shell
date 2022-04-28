@@ -63,7 +63,6 @@ pub fn interpreter_batch_test_st_folder(folder_path: &str) {
         println!("Program handle dump: {:?}", prog_handle);
         assert_eq!(
             prog_handle
-                .context
                 .get_var(String::from("ST_TESTING_RESULT"))
                 .unwrap()
                 .var_value,
@@ -109,7 +108,7 @@ mod tests {
     use std::collections::HashSet;
     use std::fs;
 
-    use crate::ast::{Function, VariableKind, VariableValue};
+    use crate::ast::{VariableKind, VariableValue};
     use crate::prog_handle::{st_program_load, st_program_run, ProgContext, VariableInfo};
     use crate::{lib_function_example_add, parser, read_file};
 
@@ -324,8 +323,9 @@ mod tests {
             .unwrap();
 
         let _result = prog_context.update_var("myvar", VariableValue::REAL(3.9));
-        assert!(
-            prog_context.get_var("myvar".to_string()).unwrap().var_value == VariableValue::INT(3)
+        assert_eq!(
+            prog_context.get_var("myvar".to_string()).unwrap().var_value,
+            VariableValue::INT(3)
         );
     }
 
@@ -341,9 +341,9 @@ mod tests {
             .unwrap();
 
         let _result = prog_context.update_var("myvar", VariableValue::INT(5));
-        assert!(
-            prog_context.get_var("myvar".to_string()).unwrap().var_value
-                == VariableValue::REAL(5.0)
+        assert_eq!(
+            prog_context.get_var("myvar".to_string()).unwrap().var_value,
+            VariableValue::REAL(5.0)
         );
     }
 
@@ -372,5 +372,64 @@ mod tests {
             )
             .unwrap_err()
             .contains("A variable already exists with this name"));
+    }
+
+    /// Tests parser on all st files within a specified folder
+    fn parser_batch_test_st_folder(folder_path: &str) {
+        let paths = fs::read_dir(folder_path).unwrap();
+
+        for path in paths {
+            let path = path.unwrap().path();
+            let path_name = path.to_str().unwrap();
+
+            println!("Name: {}", path_name);
+
+            let file = read_file(path_name).unwrap();
+            let parse_result = parser::ProgramParser::new().parse(&mut HashSet::new(), &file);
+
+            println!("{:?}\n", parse_result);
+            assert!(parse_result.is_ok());
+        }
+    }
+
+    /// Test execution of all ST files in a folder.
+    /// Simple runs the each program and asserts it contains a boolean variable 'ST_TESTING_RESULT'
+    /// that is true after execution completes. This allows creating ST example files that
+    /// essentially include their own assertions about their functionality.
+    fn interpreter_batch_test_st_folder(folder_path: &str) {
+        println!("Executing all ST files in folder {}", folder_path);
+        let paths = fs::read_dir(folder_path).unwrap();
+
+        for path in paths {
+            let path = path.unwrap().path();
+            let file_name = path.to_str().unwrap();
+
+            if file_name.contains("function") {
+                continue;
+            }
+
+            println!("Executing file {}", file_name);
+
+            let mut prog_context = st_program_load(file_name).unwrap();
+            st_program_run(&mut prog_context).unwrap();
+            prog_context.get_var(String::from("result0"));
+            assert_eq!(
+                prog_context
+                    .get_var(String::from("ST_TESTING_RESULT"))
+                    .unwrap()
+                    .var_value,
+                VariableValue::BOOL(true)
+            );
+        }
+    }
+
+    fn parser_test_st_function(file_path: &str) {
+        println!("Name: {}", file_path);
+
+        let file = read_file(file_path).unwrap();
+        let parse_result = parser::FunctionParser::new().parse(&mut HashSet::new(), &file);
+
+        println!("{:?}\n", parse_result);
+        assert!(parse_result.is_ok());
     }
 }

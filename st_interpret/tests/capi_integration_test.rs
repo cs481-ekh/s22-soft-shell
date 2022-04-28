@@ -3,8 +3,6 @@
 #[cfg(feature = "capi")]
 mod capi_test {
     use inline_c::assert_c;
-    use std::process::Command;
-    use std::process::Output;
 
     #[test]
     /// Basic addition test
@@ -46,9 +44,9 @@ mod capi_test {
             #include <stdio.h>
 
             int main() {
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
                 printf("load was called\n");
-                assert(handle.prog_handle != NULL);
+                assert(handle.prog_context != NULL);
                 return 0;
             }
         };
@@ -67,7 +65,7 @@ mod capi_test {
             #include <assert.h>
 
             int main() {
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
                 st_program_run(&handle);
                 return 0;
             }
@@ -84,7 +82,7 @@ mod capi_test {
             #include <string.h>
 
             int main() {
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
                 st_program_run(&handle);
                 VariableNameInfo * result = get_var(&handle, "a");
                 assert(!strcmp(result->name, "a"));
@@ -105,7 +103,7 @@ mod capi_test {
             #include <string.h>
 
             int main() {
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
                 st_program_run(&handle);
                 VariableNameInfo * results = get_all_vars(&handle);
                 VariableNameInfo * current = results;
@@ -139,7 +137,7 @@ mod capi_test {
             #include <string.h>
 
             int main() {
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
                 st_program_run(&handle);
                 update_var(&handle, "a", "real", "2.1");
                 VariableNameInfo * result = get_var(&handle, "a");
@@ -162,7 +160,7 @@ mod capi_test {
 
             int main() {
                 printf("starting test\n");
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_1/01_mixed.st");
                 printf("load was called\n");
                 st_program_run(&handle);
                 printf("run was called\n");
@@ -194,7 +192,7 @@ mod capi_test {
 
             int main() {
                 printf("starting test\n");
-                ProgHandlePointer handle = st_program_load("tests/test_inputs/st_subset_3-4/03_add.st");
+                ProgContextPointer handle = st_program_load("tests/test_inputs/st_subset_3-4/03_add.st");
                 printf("load was called\n");
                 st_program_run(&handle);
                 printf("run was called\n");
@@ -253,7 +251,7 @@ mod capi_test {
                         strcat(path, entry->d_name);
 
 
-                        ProgHandlePointer handle = st_program_load(path);
+                        ProgContextPointer handle = st_program_load(path);
                         printf("load was called\n");
                         st_program_run(&handle);
                         printf("run was called\n");
@@ -313,7 +311,7 @@ mod capi_test {
                         strcat(path, entry->d_name);
 
 
-                        ProgHandlePointer handle = st_program_load(path);
+                        ProgContextPointer handle = st_program_load(path);
                         printf("load was called\n");
                         st_program_run(&handle);
                         printf("run was called\n");
@@ -373,7 +371,7 @@ mod capi_test {
                         strcat(path, entry->d_name);
 
 
-                        ProgHandlePointer handle = st_program_load(path);
+                        ProgContextPointer handle = st_program_load(path);
                         printf("load was called\n");
                         st_program_run(&handle);
                         printf("run was called\n");
@@ -433,7 +431,7 @@ mod capi_test {
                         strcat(path, entry->d_name);
 
 
-                        ProgHandlePointer handle = st_program_load(path);
+                        ProgContextPointer handle = st_program_load(path);
                         printf("load was called\n");
                         st_program_run(&handle);
                         printf("run was called\n");

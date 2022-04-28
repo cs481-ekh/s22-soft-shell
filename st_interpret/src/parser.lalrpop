@@ -204,7 +204,7 @@ VariableValue: VariableValue = {
 
 VariableLabel: Box<String> = <s:VAR_NAME> => Box::new(s.to_string());
 ProgramLabel: Box<String> = <s:PROG_NAME> => Box::new(s.to_string());
-FunctionLabel: Box<String> = <s:FUNC_NAME> => Box::new(s.to_string());
+FunctionLabel: Box<String> = <s:FUNC_NAME> => Box::new(s.to_string().split_off(9));
 
 Int: i16 = <s:r"[0-9]+"> => i16::from_str(s).unwrap();
 Bool: bool = <s:r"((?i)true|false)"> => bool::from_str(&s.to_lowercase()).unwrap();

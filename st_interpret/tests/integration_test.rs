@@ -30,7 +30,6 @@ fn test_load_program() {
 fn test_load_program_with_functions() {
     let mut handle = st_program_load("tests/test_inputs/misc/09_Main_Add.st").unwrap();
     handle
-        .context
         .get_function(String::from("SimpleAddFunction"))
         .unwrap();
 }
@@ -40,11 +39,9 @@ fn test_load_program_with_functions() {
 fn test_load_program_with_nested_functions() {
     let mut handle = st_program_load("tests/test_inputs/misc/09_Main_Add_Nested.st").unwrap();
     handle
-        .context
         .get_function(String::from("NestedAddFunction"))
         .unwrap();
     handle
-        .context
         .get_function(String::from("IntIdentityFunction"))
         .unwrap();
 }

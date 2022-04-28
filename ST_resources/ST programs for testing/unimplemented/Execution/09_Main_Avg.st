@@ -3,10 +3,10 @@ PROGRAM 09_Main_Avg
     VAR
 	a : real;
         b : real;
-        avg0 : real;
         avg1 : real;
         avg2 : real;
         avg3 : real;
+        avg4 : real;
         ST_TESTING_RESULT : bool;
     END_VAR
         a := 4;

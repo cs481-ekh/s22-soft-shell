@@ -7,6 +7,7 @@ PROGRAM 09_Main_Avg
         avg2 : real;
         avg3 : real;
         avg4 : real;
+        ST_TESTING_RESULT : bool;
     END_VAR
         a := 4;
         b := 6;
@@ -19,5 +20,7 @@ PROGRAM 09_Main_Avg
         avg3 := ValueAverageFunction(a, b); // expects 5
 
         avg4 := ValueAverageFunction(Value1 := a, Value2 := b); // expects 5
+
+        ST_TESTING_RESULT := (avg1 = 12.5 & avg2 = 7.5) & (avg3 = 5.0 & avg4 = 5.0);
         
 END_PROGRAM
