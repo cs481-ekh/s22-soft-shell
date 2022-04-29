@@ -380,11 +380,11 @@ pub fn st_program_run(program_context: &mut ProgContext) -> InterpreterResult<()
     InterpreterResult::Ok(())
 }
 
-// function steps through one state from list stored in ast
-// inputs: Program Handle
-// outputs: Boolean used for determining when program is complete. True means you
-//          have excecuted all statements in the list. can be expanded to use
-//          with error detection
+/// function steps through one state from list stored in ast
+/// inputs: Program Context
+/// outputs: Boolean used for determining when program is complete. True means you
+///          have excecuted all statements in the list. can be expanded to use
+///          with error detection
 pub fn st_program_step(mut program_context: &mut ProgContext) -> InterpreterResult<bool> {
     //for debugging
     //println!("step: {count}", count = ProgramHandle.statement_counter);
@@ -579,6 +579,7 @@ pub fn st_program_step(mut program_context: &mut ProgContext) -> InterpreterResu
         Statement::Asgn(asgn) => {
             let assign_result;
 
+            // handles passing return value from function to variable
             if return_val.is_some() {
                 assign_result = return_val;
                 let AssignmentStatement::Asgn(var_name, _) = asgn;

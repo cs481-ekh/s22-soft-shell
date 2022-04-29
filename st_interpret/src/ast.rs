@@ -361,6 +361,9 @@ impl ExecutableAstNode for PrimaryExpression {
             ),
             PrimaryExpression::Expr(expression) => Some(expression.execute(context)?.unwrap()),
             PrimaryExpression::Func(func_name, input_list) => {
+                // This handles setting up a new function context when called as part of an expression
+                // and handles the passing of arguments to the appropriate variables inside of the function context
+
                 let mut value_list = Vec::new();
 
                 // execute each function inout expression
@@ -379,6 +382,7 @@ impl ExecutableAstNode for PrimaryExpression {
                         func_name
                     ))?;
 
+                // sets up new function context
                 context.start_function_block((**func_name.clone()).to_string());
                 let mut new_func_context = &mut *(context
                     .function_context_list_to_eval
@@ -388,7 +392,6 @@ impl ExecutableAstNode for PrimaryExpression {
                 new_func_context.set_func_ast(function_ast.clone());
                 new_func_context.set_input_vars(input_list.to_vec());
 
-                //println!("FUNCTION CONTEXT {:?}", context);
                 let Function::Func(_, _, dec, _, _, _) = function_ast.clone();
 
                 // execute the input dec list
@@ -405,6 +408,7 @@ impl ExecutableAstNode for PrimaryExpression {
                 let temp_func_context = new_func_context.clone();
                 let func_vars = &mut temp_func_context.get_all_vars();
 
+                // This loop takes each input to the function and updates the input variables to the function
                 for func_input in value_list {
                     let next_var = func_vars.next().ok_or("Too many inputs to function");
 
@@ -419,7 +423,7 @@ impl ExecutableAstNode for PrimaryExpression {
                     }
                 }
 
-                // this caused regression
+                // repackages and assigns updated function context to the parent context.
                 let mut temp_context = context.function_context_list_to_eval.clone().unwrap();
                 temp_context.remove(0);
                 temp_context.insert(0, Box::new(new_func_context.clone()));
