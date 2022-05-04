@@ -1,0 +1,272 @@
+use std::str::FromStr;
+use std::boxed::Box;
+use std::vec::Vec;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use crate::ast::*;
+
+grammar(function_name_list: &mut HashSet<String>);
+
+// start of Program
+pub Program: Program = {
+
+    <pl:ProgramLabel> <v:VarList> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, Some(v), s, function_name_list.clone()),
+    <pl:ProgramLabel> <s:StatementList> r"(?i)END_PROGRAM" => Program::Prog(pl, None, s, function_name_list.clone())
+};
+
+// Function specific
+pub Function: Function = {
+    <fl:FunctionLabel> ":" <rt:VariableValue> <v:VarList> <mut s:StatementList> r"(?i)END_FUNCTION" => {let ret = s.last().unwrap().clone(); s.pop(); Function::Func(fl, rt,  Some(v), s, ret, function_name_list.clone())},
+    <fl:FunctionLabel> ":" <rt:VariableValue> <mut s:StatementList> r"(?i)END_FUNCTION" => {let ret = s.last().unwrap().clone(); s.pop(); Function::Func(fl, rt, None, s, ret, function_name_list.clone())},
+};
+
+// End function Specific
+
+
+// Start of StatementList branch
+StatementList: Vec<Statement> = {
+    <s:Statement> ";" => {let mut v = Vec::new(); v.push(<>); v},
+    <s:Statement> ";" <mut sl:StatementList> => {sl.insert(0, s); sl}
+};
+
+Statement: Statement = {
+    AssignmentStatement => Statement::Asgn(<>),
+    SelectionStatement => Statement::Select(<>),
+    IterationStatement => Statement::Iter(<>),
+};
+
+SelectionStatement: SelectionStatement = {
+    IfStatement => SelectionStatement::If(<>),
+};
+
+IfStatement: IfStatement = {
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> r"(?i)END_IF" => IfStatement::If({let mut v = Vec::new(); v.push((<>)); v}, None),
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> <el:Else> r"(?i)END_IF" => IfStatement::If({let mut v = Vec::new(); v.push((e, s)); v}, Some(el)),
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> <mut ei:ElseIf> r"(?i)END_IF" => IfStatement::If({ei.insert(0, (e, s)); ei}, None),
+    r"(?i)IF" <e:Expression> r"(?i)THEN" <s:StatementList> <mut ei:ElseIf> <el:Else> r"(?i)END_IF" => IfStatement::If({ei.insert(0, (e, s)); ei}, Some(el)),
+};
+
+// Utility production rule for if statements
+ElseIf: Vec<(Expression, Vec<Statement>)> = {
+    r"(?i)ElSEIF" <e:Expression> r"(?i)THEN" <s:StatementList> => {let mut v = Vec::new(); v.push((<>)); v},
+    r"(?i)ElSEIF" <e:Expression> r"(?i)THEN" <s:StatementList> <mut ei:ElseIf> => {ei.insert(0, (e, s)); ei},
+};
+
+// Utility production rule for if statements
+Else: Vec<Statement> = {
+    r"(?i)ELSE" <s:StatementList> => s,
+};
+
+IterationStatement: IterationStatement = {
+    WhileStatement => IterationStatement::While(<>),
+};
+
+WhileStatement: WhileStatement = {
+    r"(?i)WHILE" <e:Expression> r"(?i)DO" <s:StatementList> r"(?i)END_WHILE" => WhileStatement::While(<>)
+};
+
+AssignmentStatement: AssignmentStatement = {
+    <v:VariableLabel> ":=" <e:Expression> => AssignmentStatement::Asgn(<>)
+};
+
+
+// Start of expression branch
+Expression: Expression = {
+    <x:XorExpression> r"(?i)OR" <x2:XorExpression> => Expression::Expr(x, Some(x2)),
+    <x:XorExpression> => Expression::Expr(x, None),
+};
+
+XorExpression: XorExpression = {
+    <a:AndExpression>  r"(?i)XOR" <a2:AndExpression> => XorExpression::Xor(a, Some(a2)),
+    <a:AndExpression> => XorExpression::Xor(a, None),
+};
+
+AndExpression: AndExpression = {
+  <c:Comparison> r"&|(?i)AND" <c2:Comparison> => AndExpression::And(c, Some(c2)),
+  <c:Comparison> => AndExpression::And(c, None),
+};
+
+Comparison: Comparison = {
+    <e:EquExpression> "=" <e2:EquExpression> => Comparison::CompEq(e, Some((true, e2))),
+    <e:EquExpression> "<>" <e2:EquExpression> => Comparison::CompEq(e, Some((false, e2))),
+    <e:EquExpression> => Comparison::CompEq(e, None),
+};
+
+EquExpression: EquExpression = {
+    <a:AddExpression> <c:ComparisonOperator> <a2:AddExpression> => EquExpression::Equ(a, Some((c, a2))),
+    <a:AddExpression> => EquExpression::Equ(a, None),
+};
+
+AddExpression: AddExpression = {
+    <t:Term> <a:AddOperator> <t2:Term> => AddExpression::Add(t, Some((a, t2))),
+    <t:Term> => AddExpression::Add(t, None),
+};
+
+Term: Term = {
+    <p:PowerExpression> <m:MultiplyOperator> <p2:PowerExpression> => Term::Term(p, Some((m, p2))),
+    <p:PowerExpression> => Term::Term(p, None),
+};
+
+PowerExpression: PowerExpression = {
+    <u:UnaryExpression> "**" <u2:UnaryExpression> => PowerExpression::Power(u, Some(u2)),
+    <u:UnaryExpression> => PowerExpression::Power(u, None),
+};
+
+UnaryExpression: UnaryExpression = {
+    <u:UnaryOperator> <p:PrimaryExpression> => UnaryExpression::Unary(p, Some(u)),
+    <p:PrimaryExpression> => UnaryExpression::Unary(p, None),
+};
+
+PrimaryExpression: PrimaryExpression = {
+    <c:Constant> => PrimaryExpression::Const(<>),
+    <v:VariableLabel> => PrimaryExpression::VarName(<>),
+    "(" <e:Expression> ")" => PrimaryExpression::Expr(Box::new(<>)),
+    <fl:VariableLabel> "(" <fil:FunctionInputList> ")" => {function_name_list.insert((*fl.clone().to_lowercase()).to_string()); PrimaryExpression::Func(<>)},
+};
+
+FunctionInputList: Vec<FunctionInput> = {
+    <fi:FunctionInput> => {let mut v = Vec::new(); v.push(<>); v},
+    <fi:FunctionInput> "," <mut fil:FunctionInputList> => {fil.insert(0, fi); fil},
+};
+
+FunctionInput: FunctionInput = {
+    <vl:VariableLabel> ":=" <e:Expression> => FunctionInput::Input(Some(vl), e),
+    <e:Expression> => FunctionInput::Input(None, e),
+};
+
+// TODO: add all types, this stores a litteral value, reusing variabletype enum
+Constant: VariableValue = {
+    <ui:Int> => VariableValue::INT(<>),
+    <b:Bool> => VariableValue::BOOL(<>),
+    <f:Real> => VariableValue::REAL(<>),
+};
+
+// Expression operators
+ComparisonOperator: ComparisonOperator = {
+    "<" => ComparisonOperator::LessThan,
+    ">" => ComparisonOperator::GreaterThan,
+    "<=" => ComparisonOperator::LessEqualThan,
+    ">=" => ComparisonOperator::GreaterEqualThan,
+};
+
+AddOperator: AddOperator = {
+    "+" => AddOperator::ADD,
+    "-" => AddOperator::SUBTRACT,
+};
+
+MultiplyOperator: MultiplyOperator = {
+    "*" => MultiplyOperator::MULTIPLY,
+    "/" => MultiplyOperator::DIVIDE,
+    r"(?i)MOD" => MultiplyOperator::MODULO,
+};
+
+UnaryOperator: UnaryOperator = {
+    "-" => UnaryOperator::NEGATIVE,
+    r"(?i)NOT" => UnaryOperator::NOT,
+};
+// end expression operators
+// end of expression branch
+
+
+// Start of VarList branch
+VarList: Vec<Box<VarsDec>> = {
+    <vdt:VarsDec> => {let mut v = Vec::new(); v.push(<>); v},
+    <vdt:VarsDec> <mut vl:VarList> => {vl.push(vdt); vl}
+};
+
+VarsDec: Box<VarsDec> = {
+    <vk:VariableKind> <dl:DeclarationList> r"(?i)END_VAR"=> Box::new(VarsDec::DecList(<>))
+};
+
+DeclarationList: Box<HashMap<Box<String>, VariableValue>> = {
+    <vl:VariableLabel> ":" <vt:VariableValue> ";" => {let mut m = HashMap::new(); m.insert(<>); Box::new(m)},
+    <vl:VariableLabel> ":" <vt:VariableValue> ";" <mut dl:DeclarationList> => {dl.insert(vl, vt); dl}
+};
+
+//TODO: Add rest of varaible kinds
+VariableKind: VariableKind = {
+    r"(?i)VAR" => VariableKind::NORMAL,
+    r"(?i)VAR_INPUT" => VariableKind::INPUT,
+    r"(?i)VAR_OUTPUT" => VariableKind::OUTPUT,
+    r"(?i)VAR_IN_OUT" => VariableKind::InOut,
+    r"(?i)VAR_EXTERNAL" => VariableKind::EXTERNAL,
+    r"(?i)VAR_GLOBAL" => VariableKind::GLOBAL,
+};
+
+//TODO: add all var types
+//TODO: Check if types have default value or not, change enum if they are unintallized, default values provided are hack
+VariableValue: VariableValue = {
+    r"(?i)bool" => VariableValue::BOOL(false),
+    r"(?i)int" => VariableValue::INT(0),
+    r"(?i)real" => VariableValue::REAL(0.0)
+};
+
+
+VariableLabel: Box<String> = <s:VAR_NAME> => Box::new(s.to_string());
+ProgramLabel: Box<String> = <s:PROG_NAME> => Box::new(s.to_string());
+FunctionLabel: Box<String> = <s:FUNC_NAME> => Box::new(s.to_string().split_off(9));
+
+Int: i16 = <s:r"[0-9]+"> => i16::from_str(s).unwrap();
+Bool: bool = <s:r"((?i)true|false)"> => bool::from_str(&s.to_lowercase()).unwrap();
+Real: f32 = <s:r"\d*\.\d*"> => f32::from_str(s).unwrap();
+
+// Sets regex precedence between terminals
+match {
+    r"(?i)int",
+    r"(?i)bool",
+    r"(?i)real",
+    "(",
+    ")",
+    ",",
+    r"(?i)PROGRAM[ ]\w+" => PROG_NAME,
+    r"(?i)FUNCTION[ ]\w+" => FUNC_NAME,
+    r"(?i)END_PROGRAM",
+    r"(?i)END_FUNCTION",
+    r"(?i)END_VAR",
+    r"(?i)VAR",
+    r"(?i)VAR_INPUT",
+    r"(?i)VAR_OUTPUT",
+    r"(?i)VAR_IN_OUT",
+    r"(?i)VAR_EXTERNAL",
+    r"(?i)VAR_GLOBAL",
+    ":", // Type delcaration operator
+    ";", // Statement end
+    ":=", // Assignment operator
+    "<", // Less than operator
+    ">", // Greater than operator
+    "<=", // Less than or equal to operator
+    ">=", // Greater than or equal to operator
+    "+", // Addition operator
+    "-", // Subtraction operator
+    "*", // Multiplication operator
+    "/", // Division operator
+    "**", // Power operator
+    r"(?i)MOD", // Modulo operator
+    r"(?i)NOT", // Not unary operator
+    "=", // Equality operator
+    "<>", // Not equal operator
+    r"&|(?i)AND", // And operator
+    r"(?i)XOR", // Xor operator
+    r"(?i)OR", // Or operator
+    r"[0-9]+", // int
+    r"((?i)true|false)", // bool
+    r"\d*\.\d*", // real
+
+    // Statements
+    r"(?i)WHILE", // While loop
+    r"(?i)DO",
+    r"(?i)END_WHILE",
+    r"(?i)IF", // If statement
+    r"(?i)ElSEIF",
+    r"(?i)THEN",
+    r"(?i)ELSE",
+    r"(?i)END_IF",
+
+    // Skip whitespace and comments
+    r"\s*" => { },
+    r"//[^\n\r]*[\n\r]*" => { }, // Skip `// comments`
+    r"\(\*([^*]|[\r\n]|(\*+([^*\)]|[\r\n])))*\*+\)" => { }, // `/* comment */`
+    
+} else {
+    r"[a-zA-Z][a-zA-Z_$0-9]*" => VAR_NAME,
+}

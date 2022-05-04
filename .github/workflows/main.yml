@@ -1,0 +1,43 @@
+name: Build and test
+
+on:
+  push:
+    paths:
+      - 'st_interpret/**'
+      - '.github/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ./st_interpret
+    steps:
+    - uses: actions/checkout@v2
+    - name: check format
+      run: cargo fmt --check
+    - uses: actions-rs/install@v0.1
+      with:
+        crate: cargo-c
+        version: latest
+        use-tool-cache: true
+    - name: pre-build clean
+      run: ./clean.sh
+    - name: build project
+      run: ./build.sh
+    - name: run tests
+      run: ./test.sh
+    - name: run demo program
+      working-directory: ./demos/rust_lib_usage/st_rust_demo1
+      run: cargo run
+    - name: post-build clean
+      run: ./clean.sh
+    - name: generate rustdoc documentation
+      run: cargo doc --document-private-items
+    - name: zip documentation
+      run: cd ${{ github.workspace }}/st_interpret/target/ && zip -r ${{ github.workspace}}/rustdocs-${{ github.sha }}.zip doc/
+    - uses: actions/upload-artifact@v3
+      with:
+        name: rustdocs-${{ github.sha }}
+        path: ${{ github.workspace}}/rustdocs-${{ github.sha }}.zip
